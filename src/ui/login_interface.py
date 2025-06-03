@@ -1,11 +1,22 @@
+import os
 import bcrypt
 from ..services.auth import authenticate_user, get_role
 from . import super_admin_interface
 from . import system_admin_interface
 from . import service_engineer_interface
 
+clear = lambda: os.system('cls' if os.name == 'nt' else 'clear')
+
 def login_interface():
-    print("====== URBAN MOBILITY BACKEND SYSTEM ======")
+    print(""".-------------------------------------------------------.
+|                                                       |
+|  __  __    _    ___ _   _   __  __ _____ _   _ _   _  |
+| |  \/  |  / \  |_ _| \ | | |  \/  | ____| \ | | | | | |
+| | |\/| | / _ \  | ||  \| | | |\/| |  _| |  \| | | | | |
+| | |  | |/ ___ \ | || |\  | | |  | | |___| |\  | |_| | |
+| |_|  |_/_/   \_\___|_| \_| |_|  |_|_____|_| \_|\___/  |
+|                                                       |
+'-------------------------------------------------------'""")
 
     while True:
         print("Choose what you want to do:")
@@ -21,9 +32,19 @@ def login_interface():
             exit()
         else:
             print("[ERROR] Invalid choice. Please try again.")
+        clear()
 
 def login():
     while True:
+        print(""".------------------------------.
+|                              |
+|  _     ___   ____ ___ _   _  |
+| | |   / _ \ / ___|_ _| \ | | |
+| | |  | | | | |  _ | ||  \| | |
+| | |__| |_| | |_| || || |\  | |
+| |_____\___/ \____|___|_| \_| |
+|                              |
+'------------------------------'""")
         username = input("Username: ").strip()
         password = input("Password: ").strip()
 
@@ -50,6 +71,7 @@ def login():
 
 def register():
     print("not implemented yet")
+    
     pass
 
 def exit():
