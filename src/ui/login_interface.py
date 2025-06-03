@@ -1,17 +1,31 @@
-import getpass
-from auth import authenticate_user, get_role
-import super_admin_interface
-import system_admin_interface
-import service_engineer_interface
+import bcrypt
+from ..services.auth import authenticate_user, get_role
+from . import super_admin_interface
+from . import system_admin_interface
+from . import service_engineer_interface
 
-
-def start_interface():
+def login_interface():
     print("====== URBAN MOBILITY BACKEND SYSTEM ======")
 
     while True:
-        print("\nPlease log in to continue.")
+        print("Choose what you want to do:")
+        print("1. Log in")
+        print("2. Register")
+        print("3. Exit")
+        choice = input("Enter your choice (1/2/3): ").strip().lower()
+        if choice == '1' or choice == 'log in' or choice == 'login':
+            login()
+        elif choice == '2' or choice == 'register':
+            register()
+        elif choice == '3' or choice == 'exit':
+            exit()
+        else:
+            print("[ERROR] Invalid choice. Please try again.")
+
+def login():
+    while True:
         username = input("Username: ").strip()
-        password = getpass.getpass("Password: ").strip()
+        password = input("Password: ").strip()
 
         if authenticate_user(username, password):
             role = get_role(username)
@@ -19,11 +33,11 @@ def start_interface():
             print(f"\n[INFO] Welcome, {username}! Role: {role}")
 
             if role == "super_admin":
-                super_admin_interface(username)
+                super_admin_interface.super_admin_interface(username)
             elif role == "system_admin":
-                system_admin_interface(username)
+                system_admin_interface.system_admin_interface(username)
             elif role == "service_engineer":
-                service_engineer_interface(username)
+                service_engineer_interface.service_engineer_interface(username)
             else:
                 print("[ERROR] Unknown role. Access denied.")
         else:
@@ -33,3 +47,11 @@ def start_interface():
         if again != 'y':
             print("[INFO] Exiting the system.")
             break
+
+def register():
+    print("not implemented yet")
+    pass
+
+def exit():
+    print("[INFO] Exiting the system. Goodbye!")
+    raise SystemExit(0)
