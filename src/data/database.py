@@ -1,13 +1,12 @@
 import sqlite3
-import sys
 import os
+import sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 from visual.text_colors import TextColors
 
 t = TextColors
 
-DB_FILE = "urban_mobility.db"
+DB_FILE = "src/data/urban_mobility.db"
 
 
 def initialize_database():
