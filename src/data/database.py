@@ -3,9 +3,11 @@ import os
 
 DB_FILE = "urban_mobility.db"
 
+
 def get_connection():
     """Returns a connection to the SQLite database."""
     return sqlite3.connect(DB_FILE)
+
 
 def initialize_database():
     """Initializes the database and creates necessary tables."""
@@ -22,6 +24,7 @@ def initialize_database():
     else:
         print("[INFO] Database already exists.")
 
+
 def create_users_table(cursor):
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS users (
@@ -34,6 +37,7 @@ def create_users_table(cursor):
             registration_date TEXT
         );
     """)
+
 
 def create_travellers_table(cursor):
     cursor.execute("""
@@ -53,6 +57,7 @@ def create_travellers_table(cursor):
             registration_date TEXT
         );
     """)
+
 
 def create_scooters_table(cursor):
     cursor.execute("""
@@ -75,6 +80,7 @@ def create_scooters_table(cursor):
         );
     """)
 
+
 def create_logs_table(cursor):
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS logs (
@@ -87,4 +93,3 @@ def create_logs_table(cursor):
             suspicious INTEGER
         );
     """)
-
