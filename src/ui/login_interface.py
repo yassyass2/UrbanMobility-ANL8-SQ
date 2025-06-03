@@ -47,6 +47,8 @@ def login():
 '------------------------------'""")
         username = input("Username: ").strip()
         password = input("Password: ").strip()
+        super_admin_interface.super_admin_interface() # Ja dit is een tijdelijke command om super admin interface te testen
+        clear()
 
         if authenticate_user(username, password):
             role = get_role(username)
@@ -54,7 +56,7 @@ def login():
             print(f"\n[INFO] Welcome, {username}! Role: {role}")
 
             if role == "super_admin":
-                super_admin_interface.super_admin_interface(username)
+                super_admin_interface.super_admin_interface()
             elif role == "system_admin":
                 system_admin_interface.system_admin_interface(username)
             elif role == "service_engineer":
