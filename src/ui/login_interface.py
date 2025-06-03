@@ -19,11 +19,11 @@ def start_interface():
             print(f"\n[INFO] Welcome, {username}! Role: {role}")
 
             if role == "super_admin":
-                super_admin_interface(username)
+                super_admin_interface()
             elif role == "system_admin":
-                system_admin_interface(username)
+                system_admin_interface()
             elif role == "service_engineer":
-                service_engineer_interface(username)
+                service_engineer_interface()
             else:
                 print("[ERROR] Unknown role. Access denied.")
         else:
