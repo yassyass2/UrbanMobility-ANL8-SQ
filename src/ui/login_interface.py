@@ -1,5 +1,5 @@
 import getpass
-from auth import authenticate_user, get_role
+from services.auth import authenticate_user, get_role
 import super_admin_interface
 import system_admin_interface
 import service_engineer_interface
