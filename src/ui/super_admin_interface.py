@@ -1,3 +1,5 @@
+import os
+
 # Same as Service Engineer:
 # • To update the attributes of scooters in the system
 # • To search and retrieve the information of a scooter (check note 2 below)
@@ -39,6 +41,8 @@
 # Note 2: The search function must accept reasonable data fields as a search key. It must also accept
 # partial keys. For example, a user can search for a Traveller with a name “Mike Thomson” and customer
 # ID “2123287421” by entering any of these keys: “mik”, “omso”, or “2328”, etc.
+
+clear = lambda: os.system('cls' if os.name == 'nt' else 'clear')
 
 class SuperAdminInterface:
     def __init__(self):
@@ -178,13 +182,9 @@ def super_admin_interface():
     while True:
         command = input("Enter a command (type 'help' for options): ").strip().lower()
 
-        if command == 'help':
-            SuperAdminInterface().show_help()
-        elif command == 'exit':
-            print("Exiting Super Admin Interface.")
-            break
-        elif command in SuperAdminInterface().commands:
+        if command in SuperAdminInterface().commands:
             if not SuperAdminInterface().commands[command]():
                 break
         else:
+            clear()
             print(f"Unknown command: {command}. Type 'help' for options.")
