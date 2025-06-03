@@ -1,10 +1,13 @@
 import getpass
-# from auth import authenticate_user, get_role
-import super_admin_interface, system_admin_interface, service_engineer_interface
+from auth import authenticate_user, get_role
+import super_admin_interface
+import system_admin_interface
+import service_engineer_interface
+
 
 def start_interface():
     print("====== URBAN MOBILITY BACKEND SYSTEM ======")
-    
+
     while True:
         print("\nPlease log in to continue.")
         username = input("Username: ").strip()
@@ -16,11 +19,11 @@ def start_interface():
             print(f"\n[INFO] Welcome, {username}! Role: {role}")
 
             if role == "super_admin":
-                super_admin_menu(username)
+                super_admin_interface(username)
             elif role == "system_admin":
-                system_admin_menu(username)
+                system_admin_interface(username)
             elif role == "service_engineer":
-                service_engineer_menu(username)
+                service_engineer_interface(username)
             else:
                 print("[ERROR] Unknown role. Access denied.")
         else:
