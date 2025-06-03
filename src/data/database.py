@@ -19,6 +19,7 @@ def initialize_database():
             create_travellers_table(cursor)
             create_scooters_table(cursor)
             conn.commit()
+            conn.close()
             print(f"{t.green}[INFO] Database initialized.{t.end}")
     else:
         print(f"{t.red}[INFO] Database already exists.{t.end}")
@@ -75,4 +76,3 @@ def create_scooters_table(cursor):
             last_maintenance DATE
         );
     """)
-
