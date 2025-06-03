@@ -17,5 +17,8 @@ def authenticate_user(username, password):
     return row and bcrypt.checkpw(password.encode('utf-8'), row[2])
 
 
-def get_role():
-    print("to do")
+def get_role(username):
+    with sqlite3.connect(DB_FILE) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT role FROM Users WHERE username = ?", (username,))
+        return cursor.fetchone()[0]

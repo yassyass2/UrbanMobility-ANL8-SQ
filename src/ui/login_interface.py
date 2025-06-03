@@ -1,8 +1,8 @@
 import getpass
 from services.auth import authenticate_user, get_role
-import super_admin_interface
-import system_admin_interface
-import service_engineer_interface
+from ui.super_admin_interface import super_admin_interface
+from ui.system_admin_interface import system_admin_interface
+from ui.service_engineer_interface import service_engineer_interface
 
 
 def start_interface():
