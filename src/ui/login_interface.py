@@ -1,9 +1,27 @@
-import getpass
+import msvcrt
 from services.auth import authenticate_user, get_role
 from ui.super_admin_interface import super_admin_interface
 from ui.system_admin_interface import system_admin_interface
 from ui.service_engineer_interface import service_engineer_interface
 
+def input_password(prompt="Password: "):
+    print(prompt, end='', flush=True)
+    password = ''
+    while True:
+        ch = msvcrt.getch()
+        if ch in {b'\r', b'\n'}:
+            print('')
+            break
+        elif ch == b'\x08':
+            if len(password) > 0:
+                password = password[:-1]
+                print('\b \b', end='', flush=True)
+        elif ch == b'\x03':
+            raise KeyboardInterrupt
+        else:
+            password += ch.decode('utf-8')
+            print('*', end='', flush=True)
+    return password
 
 def start_interface():
     print("====== URBAN MOBILITY BACKEND SYSTEM ======")
@@ -11,7 +29,8 @@ def start_interface():
     while True:
         print("\nPlease log in to continue.")
         username = input("Username: ").strip()
-        password = getpass.getpass("Password: ").strip()
+        # password = getpass.getpass("Password: ").strip()
+        password = input_password().strip()
 
         if authenticate_user(username, password):
             role = get_role(username)
