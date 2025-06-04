@@ -1,8 +1,12 @@
 import msvcrt
+import os
 from services.auth import authenticate_user, get_role
 from ui.super_admin_interface import super_admin_interface
 from ui.system_admin_interface import system_admin_interface
 from ui.service_engineer_interface import service_engineer_interface
+
+def clear():
+    os.system('cls' if os.name == 'nt' else 'clear')
 
 def input_password(prompt="Password: "):
     print(prompt, end='', flush=True)
@@ -20,7 +24,7 @@ def input_password(prompt="Password: "):
             raise KeyboardInterrupt
         elif ch in {b'\x00', b'\xe0'}:
             msvcrt.getch()
-        elif ch == b'\x1b':
+        elif ch in {b'\x1b'}:
             print('\n[INFO] Exiting password input.')
             return None
         else:
@@ -29,12 +33,24 @@ def input_password(prompt="Password: "):
     return password
 
 def start_interface():
-    print("====== URBAN MOBILITY BACKEND SYSTEM ======")
-
     while True:
+        print("====== URBAN MOBILITY BACKEND SYSTEM ======")
         print("\nPlease log in to continue.")
         username = input("Username: ").strip()
-        password = input_password().strip()
+        if len(username) < 8 or len(username) > 10 and username != 'super_admin':
+            clear()
+            print("[ERROR] Username must be between 8 and 10 characters long.")
+            continue
+        password_raw = input_password()
+
+        if password_raw is None:
+            print("[INFO] Password input cancelled. Exiting.")
+            continue
+        if not username:
+            print("[ERROR] Username cannot be empty.")
+            continue
+
+        password = password_raw.strip()
 
         if authenticate_user(username, password):
             role = get_role(username)
