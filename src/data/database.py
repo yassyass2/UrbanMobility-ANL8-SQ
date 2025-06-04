@@ -1,6 +1,5 @@
 import sqlite3
 import os
-import sys
 from visual.text_colors import TextColors
 
 t = TextColors
