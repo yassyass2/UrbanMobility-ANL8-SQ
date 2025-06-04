@@ -18,6 +18,11 @@ def input_password(prompt="Password: "):
                 print('\b \b', end='', flush=True)
         elif ch == b'\x03':
             raise KeyboardInterrupt
+        elif ch in {b'\x00', b'\xe0'}:
+            msvcrt.getch()
+        elif ch == b'\x1b':
+            print('\n[INFO] Exiting password input.')
+            return None
         else:
             password += ch.decode('utf-8')
             print('*', end='', flush=True)
@@ -29,7 +34,6 @@ def start_interface():
     while True:
         print("\nPlease log in to continue.")
         username = input("Username: ").strip()
-        # password = getpass.getpass("Password: ").strip()
         password = input_password().strip()
 
         if authenticate_user(username, password):
