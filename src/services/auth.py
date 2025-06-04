@@ -8,7 +8,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 DB_FILE = "src/data/urban_mobility.db"
 
 
-def authenticate_user(username, password):
+def authenticate_user(username, password) -> bool:
     with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT id, username, password_hash, role, first_name, last_name, registration_date FROM Users WHERE username = ?", (username,))
