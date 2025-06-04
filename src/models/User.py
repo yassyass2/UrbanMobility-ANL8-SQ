@@ -10,4 +10,4 @@ class User:
         self.reg_date = reg_date
 
     def __repr__(self):
-        return f"<User id={self.id} username={self.username} role={self.role}>"
+        return f"[USER] id: {self.id} | username: {self.username} | full name: {self.first_name} {self.last_name} | registered: {self.reg_date}"

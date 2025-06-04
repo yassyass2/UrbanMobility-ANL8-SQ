@@ -3,6 +3,8 @@ from services.auth import authenticate_user, get_role
 from ui.super_admin_interface import super_admin_interface
 from ui.system_admin_interface import system_admin_interface
 from ui.service_engineer_interface import service_engineer_interface
+from models.Session import Session
+
 
 def input_password(prompt="Password: "):
     print(prompt, end='', flush=True)
@@ -28,6 +30,7 @@ def input_password(prompt="Password: "):
             print('*', end='', flush=True)
     return password
 
+
 def start_interface():
     print("====== URBAN MOBILITY BACKEND SYSTEM ======")
 
@@ -38,11 +41,12 @@ def start_interface():
 
         if authenticate_user(username, password):
             role = get_role(username)
+            session = Session(username, role)
 
             print(f"\n[INFO] Welcome, {username}! Role: {role}")
 
             if role == "super_admin":
-                super_admin_interface()
+                super_admin_interface(session)
             elif role == "system_admin":
                 system_admin_interface()
             elif role == "service_engineer":
