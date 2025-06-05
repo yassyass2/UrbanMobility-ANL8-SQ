@@ -19,8 +19,6 @@ def initialize_database():
             conn.commit()
             conn.close()
             print(f"{t.green}[INFO] Database initialized.{t.end}")
-    else:
-        print(f"{t.red}[INFO] Database already exists.{t.end}")
 
 
 def create_users_table(cursor):

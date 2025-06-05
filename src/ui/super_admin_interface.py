@@ -14,7 +14,7 @@ def super_admin_interface(session: Session):
         if choice == "User Operations":
             user_menu(super_admin_service)
         elif choice == "Exit":
-            break
+            sys.exit()
 
 
 def user_menu(user_service):
@@ -38,3 +38,6 @@ def user_menu(user_service):
                 user_menu(user_service)
         if choice == "Back":
             super_admin_interface(user_service.session)
+
+
+# def user_list(user_service):

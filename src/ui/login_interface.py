@@ -5,7 +5,10 @@ from ui.super_admin_interface import super_admin_interface
 from ui.system_admin_interface import system_admin_interface
 from ui.service_engineer_interface import service_engineer_interface
 from models.Session import Session
+from visual.text_colors import TextColors
 
+
+t = TextColors
 
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
@@ -27,7 +30,7 @@ def input_password(prompt="Password: "):
         elif ch in {b'\x00', b'\xe0'}: # Special keys (like arrows)
             msvcrt.getch()
         elif ch in {b'\x1b'}: # Escape key
-            print('\n[INFO] Exiting password input.')
+            print(f'\n{t.red}[INFO] Exiting password input.{t.end}')
             return None
         else:
             password += ch.decode('utf-8')
@@ -38,19 +41,19 @@ def input_password(prompt="Password: "):
 def start_interface():
     while True:
         print("====== URBAN MOBILITY BACKEND SYSTEM ======")
-        print("\nPlease log in to continue.")
+        print(f"\n{t.blue}Please log in to continue.{t.end}")
         username = input("Username: ").strip()
         if len(username) < 8 or len(username) > 10 and username != 'super_admin':
             clear()
-            print("[ERROR] Username must be between 8 and 10 characters long.")
+            print(f"{t.red}[ERROR] Username must be between 8 and 10 characters long.{t.end}")
             continue
         password_raw = input_password()
 
         if password_raw is None:
-            print("[INFO] Password input cancelled. Exiting.")
+            print(f"{t.red}[INFO] Password input cancelled. Exiting.{t.end}")
             continue
         if not username:
-            print("[ERROR] Username cannot be empty.")
+            print(f"{t.red}[ERROR] Username cannot be empty.{t.end}")
             continue
 
         password = password_raw.strip()
@@ -68,11 +71,11 @@ def start_interface():
             elif role == "service_engineer":
                 service_engineer_interface()
             else:
-                print("[ERROR] Unknown role. Access denied.")
+                print(f"{t.red}[ERROR] Unknown role. Access denied.{t.end}")
         else:
-            print("[ERROR] Invalid credentials.")
+            print(f"{t.red}[ERROR] Invalid credentials.{t.end}")
 
-        again = input("\nDo you want to log in again? (Y/N): ").strip().lower()
+        again = input(f"\n{t.blue}Do you want to log in again? (Y/N): {t.end}").strip().lower()
         if again != 'y':
-            print("[INFO] Exiting the system.")
+            print(f"{t.blue}[INFO] Exiting the system.{t.end}")
             break
