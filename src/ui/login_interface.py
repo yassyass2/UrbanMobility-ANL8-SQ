@@ -18,15 +18,15 @@ def input_password(prompt="Password: "):
         if ch in {b'\r', b'\n'}:
             print('')
             break
-        elif ch == b'\x08':
+        elif ch == b'\x08': # Backspace
             if len(password) > 0:
                 password = password[:-1]
                 print('\b \b', end='', flush=True)
-        elif ch == b'\x03':
+        elif ch == b'\x03': # Ctrl+C
             raise KeyboardInterrupt
-        elif ch in {b'\x00', b'\xe0'}:
+        elif ch in {b'\x00', b'\xe0'}: # Special keys (like arrows)
             msvcrt.getch()
-        elif ch in {b'\x1b'}:
+        elif ch in {b'\x1b'}: # Escape key
             print('\n[INFO] Exiting password input.')
             return None
         else:
