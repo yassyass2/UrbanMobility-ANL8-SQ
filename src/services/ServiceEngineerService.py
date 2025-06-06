@@ -2,7 +2,7 @@ import bcrypt
 import os
 import sqlite3
 import sys
-from src.models import Session
+from models.Session import Session
 
 
 class ServiceEngineerService():
