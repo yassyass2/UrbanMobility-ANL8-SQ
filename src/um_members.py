@@ -8,7 +8,7 @@ def clear():
 def main():
     clear()
     
-    initialize_database()
+    # initialize_database()
 
     start_interface()
 

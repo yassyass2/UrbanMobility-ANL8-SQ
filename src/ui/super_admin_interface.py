@@ -2,6 +2,8 @@ import sys, os
 from services.SuperAdminService import SuperAdminService
 from models.Session import Session
 from ui.menu_utils import navigate_menu
+from ui.menu_utils import flush_input
+from ui.menu_utils import clear
 import time
 
 
@@ -24,20 +26,19 @@ def user_menu(user_service):
         choice = navigate_menu(menu_options)
 
         if choice == "User List":
-            menu_options = ["Back"]
-
+            clear()
             users_query_result = user_service.user_overview()
+
             if (users_query_result is not False):
+                print("====== LIST OF ALL SYSTEM USERS ======")
                 for user in users_query_result:
                     print(repr(user))
 
-            time.sleep(5)
+            flush_input()
+            input("\npress ENTER to return to menu...")
 
-            choice = navigate_menu(menu_options)
-            if choice == "Back":
-                user_menu(user_service)
-        if choice == "Back":
-            super_admin_interface(user_service.session)
+        elif choice == "Back":
+            return
 
 
 # def user_list(user_service):

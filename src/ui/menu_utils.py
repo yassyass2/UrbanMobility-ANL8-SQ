@@ -1,9 +1,17 @@
 import os
 import keyboard
+import msvcrt
 
 
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
+
+
+
+def flush_input():
+    while msvcrt.kbhit():
+        msvcrt.getch()
+
 
 def navigate_menu(options):
     selected = 0
