@@ -1,8 +1,10 @@
 import bcrypt
+import os
 import sqlite3
 from models.Session import Session
 from models.User import User
 from services.ServiceEngineerService import ServiceEngineerService
+from cryptography.fernet import Fernet
 
 DB_FILE = "src/data/urban_mobility.db"
 
@@ -21,7 +23,9 @@ class SystemAdminService(ServiceEngineerService):
                 "SELECT id, username, role, first_name, last_name, registration_date  FROM Users")
             rows = cursor.fetchall()
 
-        users = [User(id=row[0], username=row[1], password_hash=None,
+        cipher = Fernet(os.getenv("FERNET_KEY").encode())
+
+        users = [User(id=row[0], username=cipher.decrypt(row[1].encode('utf-8')), password_hash=None,
                  role=row[2], first_name=row[3], last_name=row[4],
                  reg_date=row[5]) for row in rows]
         return users
