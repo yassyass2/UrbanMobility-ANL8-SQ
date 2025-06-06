@@ -1,10 +1,9 @@
 import sys, os
+import msvcrt
 from services.SuperAdminService import SuperAdminService
 from models.Session import Session
-from ui.menu_utils import navigate_menu
-from ui.menu_utils import flush_input
-from ui.menu_utils import clear
-import msvcrt
+from ui.menu_utils import navigate_menu, flush_input, clear
+from ui.prompts.user_prompts import prompt_new_user
 
 
 def super_admin_interface(session: Session):
@@ -38,6 +37,10 @@ def user_menu(user_service):
             flush_input()
             print("\npress any key to return to menu...")
             msvcrt.getch()
+
+        elif choice == "Add User":
+            required_fields = prompt_new_user(["system_admin", "service_engineer"])
+            success = user_service.Add_user(["system_admin", "service_engineer"], required_fields)
 
         elif choice == "Back":
             return

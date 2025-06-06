@@ -5,6 +5,8 @@ from models.Session import Session
 from models.User import User
 from services.ServiceEngineerService import ServiceEngineerService
 from cryptography.fernet import Fernet
+import hashlib
+from datetime import date
 
 DB_FILE = "src/data/urban_mobility.db"
 
@@ -30,3 +32,32 @@ class SystemAdminService(ServiceEngineerService):
                  reg_date=row[5]) for row in rows]
 
         return users
+    
+    def add_user(allowed_roles: list, required_fields: dict) -> bool:
+        cipher = Fernet(os.getenv("FERNET_KEY").encode())
+
+        hash_pw = bcrypt.hashpw(required_fields["password"].encode('utf-8'), bcrypt.gensalt())
+        encrypted_username = cipher.encrypt(required_fields["username"].encode('utf-8'))
+
+        reg_date = date.today().strftime('%Y-%m-%d')
+        username_hash = hashlib.sha256(required_fields["username"].encode()).hexdigest()
+
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+            INSERT INTO users (
+                username,
+                password_hash,
+                role,
+                first_name,
+                last_name,
+                registration_date,
+                username_hash
+            ) VALUES (?, ?, ?, ?, ?, ?, ?)
+            ''', (encrypted_username.decode('utf-8'), hash_pw, required_fields["role"],
+                  required_fields["first_name"], required_fields["last_name"], reg_date, username_hash))
+            
+            conn.commit()
+            print("New user ID:", cursor.lastrowid)
+        return True
+

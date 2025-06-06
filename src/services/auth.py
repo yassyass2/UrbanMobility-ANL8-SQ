@@ -24,4 +24,7 @@ def get_role(username):
     with sqlite3.connect(DB_FILE) as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT role FROM users WHERE username_hash = ?", (username_hash,))
-        return cursor.fetchone()[0]
+
+        found = cursor.fetchone()
+
+    return found[0] if found else None
