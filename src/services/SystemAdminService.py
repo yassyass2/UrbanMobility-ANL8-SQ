@@ -33,7 +33,7 @@ class SystemAdminService(ServiceEngineerService):
 
         return users
     
-    def add_user(allowed_roles: list, required_fields: dict) -> bool:
+    def add_user(self, allowed_roles: list, required_fields: dict) -> bool:
         cipher = Fernet(os.getenv("FERNET_KEY").encode())
 
         hash_pw = bcrypt.hashpw(required_fields["password"].encode('utf-8'), bcrypt.gensalt())

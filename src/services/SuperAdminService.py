@@ -10,6 +10,3 @@ DB_FILE = "src/data/urban_mobility.db"
 class SuperAdminService(SystemAdminService):
     def __init__(self, session: Session):
         super().__init__(session)
-
-    def add_user(user: User):
-        return

@@ -40,7 +40,13 @@ def user_menu(user_service):
 
         elif choice == "Add User":
             required_fields = prompt_new_user(["system_admin", "service_engineer"])
-            success = user_service.Add_user(["system_admin", "service_engineer"], required_fields)
+            success = user_service.add_user(["system_admin", "service_engineer"], required_fields)
+            flush_input()
+
+            if success:
+                print(f"User {required_fields['username']} added, role: {required_fields['role']}")
+                print("\npress any key to return to menu...")
+                msvcrt.getch()
 
         elif choice == "Back":
             return

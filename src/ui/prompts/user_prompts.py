@@ -1,6 +1,6 @@
 from services.validation import is_valid_username, is_valid_name, is_valid_password
 from services.auth import get_role
-from ui.menu_utils import clear
+from ui.menu_utils import clear, flush_input
 
 
 def prompt_new_user(role_options: list):
@@ -8,8 +8,9 @@ def prompt_new_user(role_options: list):
     # Hangt af van welke rol de gebruiker zelf heeft
 
     clear()
-    print("=== Add New User ===")
+    print("=== ADD NEW USER ===")
     while True:
+        flush_input()
         username = input("Enter username (8-10 chars, starts with letter or '_'): ").strip().lower()
         if not is_valid_username(username):
             print("Invalid username format.")
@@ -20,7 +21,7 @@ def prompt_new_user(role_options: list):
         break
 
     while True:
-        print("password must be between 12 and 30 chars and contain atleast 1 lowercase, uppercase, number and symbol")
+        print("Password rules: between 12 and 30 chars, atleast 1 lowercase, uppercase, number and symbol")
         password = input("Enter password: ")
 
         if is_valid_password(password):
@@ -30,19 +31,19 @@ def prompt_new_user(role_options: list):
     while True:
         role = input("Enter role (service_engineer / system_admin / super_admin): ").strip().lower()
         if role not in role_options:
-            print(f"You don't have permission to add someone of role {role}")
+            print(f"You don't have permissions to add user of role {role}")
             continue
         break
 
     first_correct, last_correct = False, False
-    while True:
+    while not first_correct and not last_correct:
         if not first_correct:
             first_name = input("Enter first name: ")
             if is_valid_name(first_name):
                 first_correct = True
             else:
                 print("Invalid format, only letters or ('.-) allowed, max 30")
-                break
+                continue
 
         if not last_correct:
             last_name = input("Enter last name: ")
@@ -50,7 +51,7 @@ def prompt_new_user(role_options: list):
                 last_correct = True
             else:
                 print("Invalid format, only letters or ('.-) allowed, max 30")
-                break
+                continue
     
     return {
         "username": username,
