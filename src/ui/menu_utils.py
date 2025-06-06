@@ -7,7 +7,6 @@ def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
-
 def flush_input():
     while msvcrt.kbhit():
         msvcrt.getch()
