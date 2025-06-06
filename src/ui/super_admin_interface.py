@@ -4,7 +4,7 @@ from models.Session import Session
 from ui.menu_utils import navigate_menu
 from ui.menu_utils import flush_input
 from ui.menu_utils import clear
-import time
+import msvcrt
 
 
 def super_admin_interface(session: Session):
@@ -35,7 +35,8 @@ def user_menu(user_service):
                     print(repr(user))
 
             flush_input()
-            input("\npress ENTER to return to menu...")
+            print("\npress any key to return to menu...")
+            msvcrt.getch()
 
         elif choice == "Back":
             return

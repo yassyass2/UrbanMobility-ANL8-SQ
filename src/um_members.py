@@ -1,7 +1,6 @@
 import sys, os
 from ui.login_interface import start_interface
 from data.database import initialize_database
-from cryptography.fernet import Fernet
 from dotenv import load_dotenv
 
 
