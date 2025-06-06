@@ -17,6 +17,7 @@ class SystemAdminService(ServiceEngineerService):
         if (not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]):
             print("Session expired, login again as admin!")
             return False
+
         with sqlite3.connect(DB_FILE) as conn:
             cursor = conn.cursor()
             cursor.execute(
@@ -25,7 +26,12 @@ class SystemAdminService(ServiceEngineerService):
 
         cipher = Fernet(os.getenv("FERNET_KEY").encode())
 
-        users = [User(id=row[0], username=cipher.decrypt(row[1].encode('utf-8')), password_hash=None,
+        users = [User(id=row[0], username=cipher.decrypt(row[1].encode('utf-8')).decode('utf-8'), password_hash=None,
                  role=row[2], first_name=row[3], last_name=row[4],
                  reg_date=row[5]) for row in rows]
-        return users
+
+        print("====== LIST OF ALL SYSTEM USERS ======")
+        for user in users:
+            print(repr(user))
+
+        return True

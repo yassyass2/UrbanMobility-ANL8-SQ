@@ -27,12 +27,7 @@ def user_menu(user_service):
 
         if choice == "User List":
             clear()
-            users_query_result = user_service.user_overview()
-
-            if (users_query_result is not False):
-                print("====== LIST OF ALL SYSTEM USERS ======")
-                for user in users_query_result:
-                    print(repr(user))
+            user_service.user_overview()
 
             flush_input()
             print("\npress any key to return to menu...")
