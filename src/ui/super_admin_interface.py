@@ -48,5 +48,16 @@ def user_menu(user_service):
                 print("\npress any key to return to menu...")
                 msvcrt.getch()
 
+        elif choice == "Delete User":
+            clear()
+            flush_input()
+            users = user_service.user_overview()
+            if users:
+                print("====== USER LIST ======")
+                for user in users:
+                    print(repr(user))
+            else:
+                print("Access denied, login again as atleast a system admin!")
+
         elif choice == "Back":
             return
