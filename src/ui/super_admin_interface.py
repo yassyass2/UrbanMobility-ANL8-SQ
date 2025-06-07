@@ -53,9 +53,12 @@ def user_menu(user_service):
             flush_input()
             users = user_service.user_overview()
             if users:
-                print("====== USER LIST ======")
+                print("====== DELETE A USER ======")
                 for user in users:
-                    print(repr(user))
+                    if user.role != "super_admin":
+                        print(repr(user))
+                    id_to_delete = input("Enter ID of user to delete: ")
+                # To do: delete functie aan Service toevoegen en hier aanroepen
             else:
                 print("Access denied, login again as atleast a system admin!")
 
