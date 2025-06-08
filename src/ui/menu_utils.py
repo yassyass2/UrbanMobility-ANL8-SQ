@@ -1,6 +1,9 @@
 import os
 import keyboard
 import msvcrt
+from visual.text_colors import TextColors
+
+t = TextColors
 
 
 def clear():
@@ -10,6 +13,11 @@ def clear():
 def flush_input():
     while msvcrt.kbhit():
         msvcrt.getch()
+
+
+def click_to_return():
+    print(f"\n{t.blue}press any key to return to menu...{t.end}")
+    msvcrt.getch()
 
 
 def navigate_menu(options):

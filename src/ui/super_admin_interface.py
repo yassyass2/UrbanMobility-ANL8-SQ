@@ -2,7 +2,7 @@ import sys, os
 import msvcrt
 from services.SuperAdminService import SuperAdminService
 from models.Session import Session
-from ui.menu_utils import navigate_menu, flush_input, clear
+from ui.menu_utils import navigate_menu, flush_input, clear, click_to_return
 from ui.prompts.user_prompts import prompt_new_user
 
 
@@ -35,8 +35,7 @@ def user_menu(user_service):
                 print("Access denied, login again as atleast a system admin!")
 
             flush_input()
-            print("\npress any key to return to menu...")
-            msvcrt.getch()
+            click_to_return()
 
         elif choice == "Add User":
             required_fields = prompt_new_user(["system_admin", "service_engineer"])
@@ -45,8 +44,7 @@ def user_menu(user_service):
 
             if success:
                 print(f"User {required_fields['username']} added, role: {required_fields['role']}")
-                print("\npress any key to return to menu...")
-                msvcrt.getch()
+                click_to_return()
 
         elif choice == "Delete User":
             clear()
@@ -58,7 +56,18 @@ def user_menu(user_service):
                     if user.role != "super_admin":
                         print(repr(user))
                     id_to_delete = input("Enter ID of user to delete: ")
-                # To do: delete functie aan Service toevoegen en hier aanroepen
+                    if users[id_to_delete].role == "super_admin":
+                        print("cannot delete a Super admin")
+                        click_to_return()
+                        continue
+
+                # delete functie geeft 2 waardes terug
+                # 1: Of het succesvol was
+                # 2: De reden dat het niet lukte
+                if user_service.delete_user(["system_admin", "service_engineer"])[0]:
+                    print(f"user {id_to_delete} Deleted")
+                else:
+                    print("User does not exist")
             else:
                 print("Access denied, login again as atleast a system admin!")
 
