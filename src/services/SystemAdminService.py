@@ -72,13 +72,13 @@ class SystemAdminService(ServiceEngineerService):
 
         with sqlite3.connect(DB_FILE) as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT id, username FROM users WHERE id = ?", (delete_id,))
+            cursor.execute("SELECT 1 FROM users WHERE id = ?", (delete_id,))
             id_and_username = cursor.fetchone()
 
             if id_and_username is None:
                 return (False, "User doesn't exist")
 
-            role = auth.get_role(id_and_username[1])
+            role = auth.get_role_id(delete_id)
             if role not in allowed_roles:
                 return (False, f"You don't have permission to delete {role}s")
             

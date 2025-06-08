@@ -64,7 +64,7 @@ def user_menu(user_service):
                 # 2: De reden dat het niet lukte
                 del_result = user_service.delete_user(["system_admin", "service_engineer"], id_to_delete)
                 if del_result[0]:
-                    print(f"user {id_to_delete} Deleted")
+                    print(f"User {id_to_delete} Deleted")
                     click_to_return()
                 else:
                     print(del_result[1])

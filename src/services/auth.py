@@ -28,3 +28,13 @@ def get_role(username):
         found = cursor.fetchone()
 
     return found[0] if found else None
+
+
+def get_role_id(id):
+    with sqlite3.connect(DB_FILE) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT role FROM users WHERE id = ?", (id,))
+
+        found = cursor.fetchone()
+
+    return found[0] if found else None
