@@ -64,7 +64,7 @@ def prompt_new_user(role_options: list):
 
 def get_valid_user_id():
     while True:
-        user_input = input("Enter the ID of the user to delete: ").strip()
+        user_input = input("\nEnter the ID of the user to delete: ").strip()
 
         if not user_input.isdigit():
             print("Invalid input. Please enter a numeric user ID.")

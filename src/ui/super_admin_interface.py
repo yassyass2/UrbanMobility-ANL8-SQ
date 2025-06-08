@@ -57,18 +57,11 @@ def user_menu(user_service):
                 for user in users:
                     if user.role != "super_admin":
                         print(repr(user))
-                id_to_delete = get_valid_user_id()
 
-                # delete functie geeft 2 waardes terug
-                # 1: Of het succesvol was
-                # 2: De reden dat het niet lukte
+                id_to_delete = get_valid_user_id()
                 del_result = user_service.delete_user(["system_admin", "service_engineer"], id_to_delete)
-                if del_result[0]:
-                    print(f"User {id_to_delete} Deleted")
-                    click_to_return()
-                else:
-                    print(del_result[1])
-                    click_to_return()
+                print(del_result)
+                click_to_return()
 
         elif choice == "Back":
             return

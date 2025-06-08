@@ -66,22 +66,25 @@ class SystemAdminService(ServiceEngineerService):
             print("New user ID:", cursor.lastrowid)
         return True
 
-    def delete_user(self, allowed_roles: list, delete_id: int) -> tuple[bool, str]:
+    def delete_user(self, allowed_roles: list, delete_id: int) -> str:
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
             return (False, "Session expired" if not self.session.is_valid() else "Must be atleast system admin to perform this action.")
 
         with sqlite3.connect(DB_FILE) as conn:
             cursor = conn.cursor()
-            cursor.execute("SELECT 1 FROM users WHERE id = ?", (delete_id,))
+            cursor.execute("SELECT id, username FROM users WHERE id = ?", (delete_id,))
             id_and_username = cursor.fetchone()
 
             if id_and_username is None:
-                return (False, "User doesn't exist")
+                return "Delete failed, User doesn't exist"
 
             role = auth.get_role_id(delete_id)
             if role not in allowed_roles:
-                return (False, f"You don't have permission to delete {role}s")
+                return f"Delete failed, you don't have permission to delete {role}s"
             
             cursor.execute("DELETE FROM users WHERE id = ?", (delete_id,))
             conn.commit()
-        return (True, "") 
+
+        cipher = Fernet(os.getenv("FERNET_KEY").encode())
+        decrypted_username = cipher.decrypt(id_and_username[1].encode('utf-8')).decode('utf-8')
+        return f"Succesfully deleted user with ID {delete_id} and Username {decrypted_username}"
