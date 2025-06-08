@@ -3,7 +3,7 @@ import msvcrt
 from services.SuperAdminService import SuperAdminService
 from models.Session import Session
 from ui.menu_utils import navigate_menu, flush_input, clear, click_to_return
-from ui.prompts.user_prompts import prompt_new_user
+from ui.prompts.user_prompts import prompt_new_user, get_valid_user_id
 
 
 def super_admin_interface(session: Session):
@@ -45,6 +45,8 @@ def user_menu(user_service):
             if success:
                 print(f"User {required_fields['username']} added, role: {required_fields['role']}")
                 click_to_return()
+            else:
+                print("Access denied, login again as atleast a system admin!")
 
         elif choice == "Delete User":
             clear()
@@ -55,21 +57,18 @@ def user_menu(user_service):
                 for user in users:
                     if user.role != "super_admin":
                         print(repr(user))
-                    id_to_delete = input("Enter ID of user to delete: ")
-                    if users[id_to_delete].role == "super_admin":
-                        print("cannot delete a Super admin")
-                        click_to_return()
-                        continue
+                id_to_delete = get_valid_user_id()
 
                 # delete functie geeft 2 waardes terug
                 # 1: Of het succesvol was
                 # 2: De reden dat het niet lukte
-                if user_service.delete_user(["system_admin", "service_engineer"])[0]:
+                del_result = user_service.delete_user(["system_admin", "service_engineer"], id_to_delete)
+                if del_result[0]:
                     print(f"user {id_to_delete} Deleted")
+                    click_to_return()
                 else:
-                    print("User does not exist")
-            else:
-                print("Access denied, login again as atleast a system admin!")
+                    print(del_result[1])
+                    click_to_return()
 
         elif choice == "Back":
             return
