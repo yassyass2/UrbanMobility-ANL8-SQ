@@ -68,7 +68,7 @@ class SystemAdminService(ServiceEngineerService):
 
     def delete_user(self, allowed_roles: list, delete_id: int) -> str:
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
-            return (False, "Session expired" if not self.session.is_valid() else "Must be atleast system admin to perform this action.")
+            return "Fail, Session expired" if not self.session.is_valid() else "Must be atleast system admin to perform this action."
 
         with sqlite3.connect(DB_FILE) as conn:
             cursor = conn.cursor()

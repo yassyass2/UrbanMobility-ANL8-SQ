@@ -1,5 +1,4 @@
-import sys, os
-import msvcrt
+import sys
 from services.SuperAdminService import SuperAdminService
 from models.Session import Session
 from ui.menu_utils import navigate_menu, flush_input, clear, click_to_return
@@ -49,19 +48,28 @@ def user_menu(user_service):
                 print("Access denied, login again as atleast a system admin!")
 
         elif choice == "Delete User":
-            clear()
-            flush_input()
-            users = user_service.user_overview()
-            if users:
-                print("====== DELETE A USER ======")
-                for user in users:
-                    if user.role != "super_admin":
-                        print(repr(user))
-
-                id_to_delete = get_valid_user_id()
+                id_to_delete = user_selection_screen(user_service, "DELETE")
                 del_result = user_service.delete_user(["system_admin", "service_engineer"], id_to_delete)
                 print(del_result)
                 click_to_return()
 
+        elif choice == "Modify User":
+            id_to_update = user_selection_screen(user_service, "MODIFY")
+            # update aanroepen service, To do
+            click_to_return()
+
         elif choice == "Back":
             return
+
+
+def user_selection_screen(user_service, action: str) -> int:
+    clear()
+    flush_input()
+    users = user_service.user_overview()
+    if users:
+        print(f"====== {action} A USER ======")
+        for user in users:
+            if user.role != "super_admin":
+                print(repr(user))
+
+    return get_valid_user_id()
