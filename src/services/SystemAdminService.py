@@ -88,3 +88,34 @@ class SystemAdminService(ServiceEngineerService):
         cipher = Fernet(os.getenv("FERNET_KEY").encode())
         decrypted_username = cipher.decrypt(id_and_username[1].encode('utf-8')).decode('utf-8')
         return f"Succesfully deleted user with ID {delete_id} and Username {decrypted_username}"
+
+    def change_password():
+        print("Change password functionality is not implemented yet.")
+        
+    def delete_account(self) -> bool:
+        print("Delete account functionality is not implemented yet.")
+
+    def create_backup(self) -> bool:
+        print("Create backup functionality is not implemented yet.")
+
+    def restore_backup(self) -> bool:
+        print("Restore backup functionality is not implemented yet.")
+
+    def view_backups(self) -> list:
+        print("View backups functionality is not implemented yet.")
+        return []
+    
+    def add_traveler(self, traveller_data: dict) -> bool:
+        print("Add traveller functionality is not implemented yet.")
+
+    def update_traveler(self, traveler_id: int, updated_data: dict) -> bool:
+        print("Update traveller functionality is not implemented yet.")
+
+    def delete_traveler(self, traveler_id: int) -> bool:
+        print("Delete traveller functionality is not implemented yet.")
+        return False
+    
+    def view_travelers(self) -> list:
+        print("View travellers functionality is not implemented yet.")
+        return []
+    
