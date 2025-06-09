@@ -65,7 +65,8 @@ def start_interface():
             print(f"\n[INFO] Welcome, {username}! Role: {role}")
 
             if role == "super_admin":
-                super_admin_interface(session)
+                # super_admin_interface(session)
+                system_admin_interface(session)
             elif role == "system_admin":
                 system_admin_interface()
             elif role == "service_engineer":
