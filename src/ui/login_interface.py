@@ -1,4 +1,3 @@
-import msvcrt
 import os
 from services.auth import authenticate_user, get_role
 from ui.super_admin_interface import super_admin_interface
@@ -6,37 +5,13 @@ from ui.system_admin_interface import system_admin_interface
 from ui.service_engineer_interface import service_engineer_interface
 from models.Session import Session
 from visual.text_colors import TextColors
+from ui.prompts.field_prompts import input_password
 
 
 t = TextColors
 
 def clear():
     os.system('cls' if os.name == 'nt' else 'clear')
-
-def input_password(prompt="Password: "):
-    print(prompt, end='', flush=True)
-    password = ''
-    while True:
-        ch = msvcrt.getch()
-        if ch in {b'\r', b'\n'}:
-            print('')
-            break
-        elif ch == b'\x08': # Backspace
-            if len(password) > 0:
-                password = password[:-1]
-                print('\b \b', end='', flush=True)
-        elif ch == b'\x03': # Ctrl+C
-            raise KeyboardInterrupt
-        elif ch in {b'\x00', b'\xe0'}: # Special keys (like arrows)
-            msvcrt.getch()
-        elif ch in {b'\x1b'}: # Escape key
-            print(f'\n{t.red}[INFO] Exiting password input.{t.end}')
-            return None
-        else:
-            password += ch.decode('utf-8')
-            print('*', end='', flush=True)
-    return password
-
 
 def start_interface():
     while True:

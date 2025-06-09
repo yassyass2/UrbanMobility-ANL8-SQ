@@ -2,7 +2,7 @@ import sys
 from services.SuperAdminService import SuperAdminService
 from models.Session import Session
 from ui.menu_utils import navigate_menu, flush_input, clear, click_to_return
-from ui.prompts.user_prompts import prompt_new_user, get_valid_user_id
+from ui.prompts.user_prompts import *
 
 
 def super_admin_interface(session: Session):
@@ -55,7 +55,8 @@ def user_menu(user_service):
 
         elif choice == "Modify User":
             id_to_update = user_selection_screen(user_service, "MODIFY")
-            # update aanroepen service, To do
+            fields_to_update = prompt_update_user(id_to_update, ["system_admin", "service_engineer"])
+            print(user_service.update_user(id_to_update, fields_to_update))
             click_to_return()
 
         elif choice == "Back":

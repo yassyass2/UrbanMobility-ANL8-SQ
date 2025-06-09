@@ -88,6 +88,29 @@ class SystemAdminService(ServiceEngineerService):
         cipher = Fernet(os.getenv("FERNET_KEY").encode())
         decrypted_username = cipher.decrypt(id_and_username[1].encode('utf-8')).decode('utf-8')
         return f"Succesfully deleted user with ID {delete_id} and Username {decrypted_username}"
+    
+    def update_user(self, id: int, to_update: dict):
+        if not to_update:
+            return "No fields provided to update."
+
+        fields_query = ", ".join(f"{field} = ?" for field in to_update)
+        new_values = list(to_update.values())
+
+        try:
+            with sqlite3.connect(DB_FILE) as conn:
+                cursor = conn.cursor()
+
+                query = f"UPDATE users SET {fields_query} WHERE id = ?"
+                cursor.execute(query, new_values + [id])
+                conn.commit()
+
+                if cursor.rowcount == 0:
+                    return "No user found with the given ID."
+
+                return "User updated successfully."
+
+        except sqlite3.Error as e:
+            return f"Database error: {e}"
 
     def change_password():
         print("Change password functionality is not implemented yet.")
@@ -105,17 +128,17 @@ class SystemAdminService(ServiceEngineerService):
         print("View backups functionality is not implemented yet.")
         return []
     
-    def add_traveler(self, traveller_data: dict) -> bool:
+    def add_traveller(self, traveller_data: dict) -> bool:
         print("Add traveller functionality is not implemented yet.")
 
-    def update_traveler(self, traveler_id: int, updated_data: dict) -> bool:
+    def update_traveller(self, traveller_id: int, updated_data: dict) -> bool:
         print("Update traveller functionality is not implemented yet.")
 
-    def delete_traveler(self, traveler_id: int) -> bool:
+    def delete_traveller(self, traveller_id: int) -> bool:
         print("Delete traveller functionality is not implemented yet.")
         return False
     
-    def view_travelers(self) -> list:
+    def view_travellers(self) -> list:
         print("View travellers functionality is not implemented yet.")
         return []
     

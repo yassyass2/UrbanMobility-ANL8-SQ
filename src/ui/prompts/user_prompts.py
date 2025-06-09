@@ -1,6 +1,7 @@
 from services.validation import is_valid_username, is_valid_name, is_valid_password
 from services.auth import get_role
 from ui.menu_utils import clear, flush_input
+from ui.prompts.field_prompts import *
 
 
 def prompt_new_user(role_options: list):
@@ -9,50 +10,13 @@ def prompt_new_user(role_options: list):
 
     clear()
     print("=== ADD NEW USER ===")
-    while True:
-        flush_input()
-        username = input("Enter username (8-10 chars, starts with letter or '_'): ").strip().lower()
-        if not is_valid_username(username):
-            print("Invalid username format.")
-            continue
-        if get_role(username):
-            print("Username already exists.")
-            continue
-        break
 
-    while True:
-        print("Password rules: between 12 and 30 chars, atleast 1 lowercase, uppercase, number and symbol")
-        password = input("Enter password: ")
+    username = prompt_username()
+    password = prompt_password()
+    role = prompt_role(role_options)
+    first_name = prompt_first_name()
+    last_name = prompt_last_name()
 
-        if is_valid_password(password):
-            break
-        print("Invalid password format.")
-
-    while True:
-        role = input("Enter role (service_engineer / system_admin / super_admin): ").strip().lower()
-        if role not in role_options:
-            print(f"You don't have permissions to add user of role {role}")
-            continue
-        break
-
-    first_correct, last_correct = False, False
-    while not first_correct and not last_correct:
-        if not first_correct:
-            first_name = input("Enter first name: ")
-            if is_valid_name(first_name):
-                first_correct = True
-            else:
-                print("Invalid format, only letters or ('.-) allowed, max 30")
-                continue
-
-        if not last_correct:
-            last_name = input("Enter last name: ")
-            if is_valid_name(last_name):
-                last_correct = True
-            else:
-                print("Invalid format, only letters or ('.-) allowed, max 30")
-                continue
-    
     return {
         "username": username,
         "password": password,
@@ -61,6 +25,48 @@ def prompt_new_user(role_options: list):
         "last_name": last_name
     }
 
+
+def prompt_update_user(id, role_options):
+    fields = ["First Name", "Last Name", "Role", "Username", "Password"]
+    print(f"Update fields for user {id}: \n")
+    for i, field in enumerate(fields, 1):
+        print(f"{i}. {field}")
+
+    numbers_csv = input("Enter number(s) of fields to update (comma-separated): ").strip()
+    while not is_valid_number_selection(numbers_csv):
+        print(f"Update fields for user: \n")
+        for i, field in enumerate(fields, 1):
+            print(f"{i}. {field}")
+        numbers_csv = input("Invalid format for fields to update. input numbers seperated by , like (1,2,3)")
+    
+    updates = {}
+    if "1" in numbers_csv:
+        updates["first_name"] = prompt_first_name("Enter new First name: ")
+    if "2" in numbers_csv:
+        updates["last_name"] = prompt_last_name("Enter new Last name: ")
+    if "3" in numbers_csv:
+        updates["role"] = prompt_role(role_options, "Enter the new  role (service_engineer / system_admin / super_admin): ")
+    if "4" in numbers_csv:
+        updates["username"] = prompt_username("Enter new username: ")
+    if "5" in numbers_csv:
+        updates["password"] = prompt_password("Enter new password: ")
+
+    return updates
+
+
+def is_valid_number_selection(numbers: str) -> list:
+    numbers = numbers.strip()
+
+    if not numbers:
+        return None
+
+    parts = [part.strip() for part in numbers.split(',')]
+
+    if all(part.isdigit() for part in parts):
+        return parts
+    else:
+        return None
+    
 
 def get_valid_user_id():
     while True:
