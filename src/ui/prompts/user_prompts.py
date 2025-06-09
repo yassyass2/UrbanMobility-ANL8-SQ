@@ -1,5 +1,3 @@
-from services.validation import is_valid_username, is_valid_name, is_valid_password
-from services.auth import get_role
 from ui.menu_utils import clear, flush_input
 from ui.prompts.field_prompts import *
 
@@ -49,7 +47,7 @@ def prompt_update_user(id, role_options):
     if "4" in numbers_csv:
         updates["username"] = prompt_username("Enter new username: ")
     if "5" in numbers_csv:
-        updates["password"] = prompt_password("Enter new password: ")
+        updates["password_hash"] = prompt_password("Enter new password: ")
 
     return updates
 
@@ -70,7 +68,7 @@ def is_valid_number_selection(numbers: str) -> list:
 
 def get_valid_user_id():
     while True:
-        user_input = input("\nEnter the ID of the user to delete: ").strip()
+        user_input = input("\nEnter the ID of the user: ").strip()
 
         if not user_input.isdigit():
             print("Invalid input. Please enter a numeric user ID.")

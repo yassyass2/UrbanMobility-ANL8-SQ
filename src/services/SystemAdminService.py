@@ -29,7 +29,7 @@ class SystemAdminService(ServiceEngineerService):
 
         cipher = Fernet(os.getenv("FERNET_KEY").encode())
 
-        users = [User(id=row[0], username=cipher.decrypt(row[1].encode('utf-8')).decode('utf-8'), password_hash=None,
+        users = [User(id=row[0], username=cipher.decrypt(row[1]).decode('utf-8'), password_hash=None,
                  role=row[2], first_name=row[3], last_name=row[4],
                  reg_date=row[5]) for row in rows]
 
@@ -92,6 +92,15 @@ class SystemAdminService(ServiceEngineerService):
     def update_user(self, id: int, to_update: dict):
         if not to_update:
             return "No fields provided to update."
+        
+        if "password" in to_update.keys():
+            to_update["password"] = bcrypt.hashpw(to_update["password"].encode('utf-8'), bcrypt.gensalt())
+        if "username" in to_update.keys():
+            cipher = Fernet(os.getenv("FERNET_KEY").encode())
+            plain_uname = to_update["username"]
+
+            to_update["username_hash"] = hashlib.sha256(plain_uname.encode()).hexdigest()
+            to_update["username"] = cipher.encrypt(to_update["username"].encode('utf-8'))
 
         fields_query = ", ".join(f"{field} = ?" for field in to_update)
         new_values = list(to_update.values())
