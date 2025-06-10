@@ -2,10 +2,8 @@ import sys, os
 from ui.login_interface import start_interface
 from data.database import initialize_database
 from dotenv import load_dotenv
+from ui.menu_utils import clear
 
-
-def clear():
-    os.system('cls' if os.name == 'nt' else 'clear')
 
 def main():
     load_dotenv()
