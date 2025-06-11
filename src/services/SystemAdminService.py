@@ -139,13 +139,12 @@ class SystemAdminService(ServiceEngineerService):
         random.shuffle(password_list)
         return ''.join(password_list)
 
-    def reset_password(self, id, allowed_roles):
+    def reset_password(self, id, allowed_roles, temp_password):
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
             return "Fail, Session expired" if not self.session.is_valid() else "Must be atleast system admin to perform this action."
         if auth.get_role_id(id) not in allowed_roles:
             return f"You can't reset the password of a user with role {auth.get_role_id(id)}"
 
-        temp_password = self.generate_temp_password()
         password_hash = bcrypt.hashpw(temp_password.encode(), bcrypt.gensalt())
 
         with sqlite3.connect(DB_FILE) as conn:
@@ -157,7 +156,7 @@ class SystemAdminService(ServiceEngineerService):
             """, (password_hash, id))
             conn.commit()
 
-        return f"New password for user {id}: {temp_password}"
+        return f"Temporary password for user {id} succesfully set"
         
     def delete_account(self) -> bool:
         print("Delete account functionality is not implemented yet.")

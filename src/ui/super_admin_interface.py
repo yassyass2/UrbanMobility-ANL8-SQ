@@ -61,7 +61,8 @@ def user_menu(user_service):
 
         elif choice == "Reset User Password":
             id_to_reset = user_selection_screen(user_service, "RESET PASSWORD OF")
-            print(user_service.reset_password(id_to_reset, ["system_admin", "service_engineer"]))
+            temp_pass = prompt_password(Prompt=f"Enter a temporary password for User {id_to_reset}: ")
+            user_service.reset_password(id_to_reset, ["system_admin", "service_engineer"], temp_pass)
             click_to_return()
 
         elif choice == "Back":
