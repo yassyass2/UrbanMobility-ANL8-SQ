@@ -157,9 +157,6 @@ class SystemAdminService(ServiceEngineerService):
             conn.commit()
 
         return f"Temporary password for user {id} succesfully set"
-        
-    def delete_account(self) -> bool:
-        print("Delete account functionality is not implemented yet.")
 
     def create_backup(self) -> bool:
         print("Create backup functionality is not implemented yet.")
