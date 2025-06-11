@@ -96,8 +96,8 @@ class SystemAdminService(ServiceEngineerService):
         if not to_update:
             return "No fields provided to update."
         
-        if "password" in to_update.keys():
-            to_update["password"] = bcrypt.hashpw(to_update["password"].encode('utf-8'), bcrypt.gensalt())
+        if "password_hash" in to_update.keys():
+            to_update["password_hash"] = bcrypt.hashpw(to_update["password_hash"].encode('utf-8'), bcrypt.gensalt())
         if "username" in to_update.keys():
             cipher = Fernet(os.getenv("FERNET_KEY").encode())
             plain_uname = to_update["username"]

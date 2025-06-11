@@ -46,8 +46,7 @@ def prompt_username(Prompt = "Enter username (8-10 chars, starts with letter or 
 def prompt_password(Prompt= "Enter a password: "):
     while True:
         print("Password rules: between 12 and 30 chars, atleast 1 lowercase, uppercase, number and symbol")
-        print(Prompt)
-        password = input_password()
+        password = input_password(prompt=Prompt)
 
         if is_valid_password(password):
             return password

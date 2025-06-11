@@ -1,11 +1,15 @@
 import os
 from services.auth import authenticate_user, get_role
+from services.SystemAdminService import SystemAdminService
 from ui.super_admin_interface import super_admin_interface
 from ui.system_admin_interface import system_admin_interface
 from ui.service_engineer_interface import service_engineer_interface
 from models.Session import Session
 from visual.text_colors import TextColors
-from ui.prompts.field_prompts import input_password
+from ui.prompts.field_prompts import *
+from ui.menu_utils import *
+import sqlite3
+import hashlib
 
 
 t = TextColors
@@ -17,7 +21,7 @@ def start_interface():
     while True:
         print("====== URBAN MOBILITY BACKEND SYSTEM ======")
         print(f"\n{t.blue}Please log in to continue.{t.end}")
-        username = input("Username: ").strip()
+        username = input("Username: ").strip().lower()
         if len(username) < 8 or len(username) > 10 and username != 'super_admin':
             clear()
             print(f"{t.red}[ERROR] Username must be between 8 and 10 characters long.{t.end}")
@@ -36,6 +40,7 @@ def start_interface():
         if authenticate_user(username, password):
             role = get_role(username)
             session = Session(username, role)
+            check_temporary_password(username, session)
 
             print(f"\n[INFO] Welcome, {username}! Role: {role}")
             
@@ -54,3 +59,29 @@ def start_interface():
         if again != 'y':
             print(f"{t.blue}[INFO] Exiting the system.{t.end}")
             break
+
+
+def check_temporary_password(username, session):
+    with sqlite3.connect("src/data/urban_mobility.db") as conn:
+        cursor = conn.cursor()
+        hashed_uname = hashlib.sha256(username.encode()).hexdigest()
+        
+        cursor.execute("SELECT id, must_change_password FROM users WHERE username_hash = ?", (hashed_uname,))
+        result = cursor.fetchone()
+
+        if result and result[1] == 1:
+            print("You must set a new password before continuing.")
+            new_pass = prompt_password(Prompt="Enter a new strong password: ")
+            service = SystemAdminService(session)
+            service.update_user(result[0], {"password_hash": new_pass})
+
+            # must_change_password terug naar 0
+            cursor.execute("""
+                UPDATE users
+                SET must_change_password = 0
+                WHERE username_hash = ?
+            """, (hashed_uname,))
+            conn.commit()
+
+            print(f"Password successfully changed for account: {username}")
+            click_to_return()
