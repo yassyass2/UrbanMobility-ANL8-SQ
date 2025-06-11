@@ -103,7 +103,7 @@ class SystemAdminService(ServiceEngineerService):
             plain_uname = to_update["username"]
 
             to_update["username_hash"] = hashlib.sha256(plain_uname.encode()).hexdigest()
-            to_update["username"] = cipher.encrypt(to_update["username"].encode('utf-8'))
+            to_update["username"] = cipher.encrypt(to_update["username"].encode('utf-8')).decode('utf-8')
 
         fields_query = ", ".join(f"{field} = ?" for field in to_update)
         new_values = list(to_update.values())
@@ -142,7 +142,7 @@ class SystemAdminService(ServiceEngineerService):
     def reset_password(self, id, allowed_roles):
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
             return "Fail, Session expired" if not self.session.is_valid() else "Must be atleast system admin to perform this action."
-        if auth.get_role_id(id) not in allowed_roles or self.session:
+        if auth.get_role_id(id) not in allowed_roles:
             return f"You can't reset the password of a user with role {auth.get_role_id(id)}"
 
         temp_password = self.generate_temp_password()
