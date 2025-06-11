@@ -30,7 +30,7 @@ class ServiceEngineerService():
             return
         print(f"Updated scooter {scooter_id}.")
 
-    def search_scooter(self, scooter_id):
+    def search_scooter_by_id(self, scooter_id):
         if not self.session.is_valid():
             print("session expired")
             return
@@ -40,12 +40,36 @@ class ServiceEngineerService():
         cursor = conn.cursor()
 
         try:
-            cursor.execute("SELECT * FROM scooters WHERE id = ?", (scooter_id,))
-            scooter = cursor.fetchone()
-            if scooter:
-                print(f"Scooter found: {scooter}")
+            cursor.execute("SELECT * FROM scooters WHERE id LIKE ?", (f"%{scooter_id}%",))
+            scooters = cursor.fetchall()
+            if scooters:
+                print("Scooters found:")
+                for scooter in scooters:
+                    print(scooter)
             else:
-                print(f"No scooter found with ID {scooter_id}.")
+                print(f"No scooter found with ID containing '{scooter_id}'.")
+        except sqlite3.Error as e:
+            print(f"Database error: {e}")
+        finally:
+            conn.close()
+
+    def search_scooter_by_name(self, scooter_name):
+        if not self.session.is_valid():
+            print("Session expired")
+            return
+        
+        conn = sqlite3.connect('src/data/urban_mobility.db')
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("SELECT * FROM scooters WHERE brand LIKE ?", (f"%{scooter_name}%",))
+            scooters = cursor.fetchall()
+            if scooters:
+                print(f"Scooters found:")
+                for scooter in scooters:
+                    print(scooter)
+            else: 
+                print(f"No scooter found containing name: {scooter_name}.")
         except sqlite3.Error as e:
             print(f"Database error: {e}")
         finally:

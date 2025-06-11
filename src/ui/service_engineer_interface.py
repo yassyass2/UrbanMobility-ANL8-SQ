@@ -31,11 +31,28 @@ def service_engineer_interface(session: Session):
 
 
         elif choice == "Search Scooter":
-            clear()
-            flush_input()
-            scooter_id = input("Enter scooter ID to check status: ")
-            service_engineer_service.search_scooter(scooter_id)
-            click_to_return()
+            while True:
+                menu_options = ["Search By ID", "Search By Name", "Back"]
+                choice = navigate_menu(menu_options)
+
+                if choice == "Search By ID":
+                    clear()
+                    flush_input()
+                    scooter_id = input("Enter scooter ID: ")
+                    service_engineer_service.search_scooter_by_id(scooter_id)
+                    click_to_return()
+
+                elif choice == "Search By Name":
+                    clear()
+                    flush_input()
+                    scooter_name = input("Enter scooter Name: ")
+                    service_engineer_service.search_scooter_by_name(scooter_name)
+                    click_to_return()
+
+                elif choice == "Back":
+                    clear();
+                    flush_input()
+                    return
 
         elif choice == "Exit":
             sys.exit()
