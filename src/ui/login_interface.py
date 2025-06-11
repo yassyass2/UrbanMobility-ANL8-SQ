@@ -42,9 +42,9 @@ def start_interface():
             if role == "super_admin":
                 super_admin_interface(session)
             elif role == "system_admin":
-                system_admin_interface()
+                system_admin_interface(session)
             elif role == "service_engineer":
-                service_engineer_interface()
+                service_engineer_interface(session)
             else:
                 print(f"{t.red}[ERROR] Unknown role. Access denied.{t.end}")
         else:
