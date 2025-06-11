@@ -59,6 +59,11 @@ def user_menu(user_service):
             print(user_service.update_user(id_to_update, fields_to_update))
             click_to_return()
 
+        elif choice == "Reset User Password":
+            id_to_reset = user_selection_screen(user_service, "RESET PASSWORD OF")
+            print(user_service.reset_password(id_to_reset, ["system_admin", "service_engineer"]))
+            click_to_return()
+
         elif choice == "Back":
             return
 

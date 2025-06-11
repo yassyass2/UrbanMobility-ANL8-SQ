@@ -5,6 +5,7 @@ from models.Session import Session
 from models.User import User
 from services.ServiceEngineerService import ServiceEngineerService
 from services import auth
+import string, random
 
 from cryptography.fernet import Fernet
 import hashlib
@@ -90,6 +91,8 @@ class SystemAdminService(ServiceEngineerService):
         return f"Succesfully deleted user with ID {delete_id} and Username {decrypted_username}"
     
     def update_user(self, id: int, to_update: dict):
+        if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            return "Fail, Session expired" if not self.session.is_valid() else "Must be atleast system admin to perform this action."
         if not to_update:
             return "No fields provided to update."
         
@@ -121,8 +124,40 @@ class SystemAdminService(ServiceEngineerService):
         except sqlite3.Error as e:
             return f"Database error: {e}"
 
-    def change_password():
-        print("Change password functionality is not implemented yet.")
+    def generate_temp_password(self, length=16):
+        if length < 12 or length > 30:
+            raise ValueError("Password length must be between 12 and 30")
+
+        upper = random.choice(string.ascii_uppercase)
+        lower = random.choice(string.ascii_lowercase)
+        digit = random.choice(string.digits)
+        symbol = random.choice("~!@#$%&_-+=`|\\(){}[]:;'<>,.?/")
+        remaining = random.choices(string.ascii_letters + string.digits + "~!@#$%&_-+=`|\\(){}[]:;'<>,.?/", k=length - 4)
+
+        # Shuffle
+        password_list = list(upper + lower + digit + symbol + ''.join(remaining))
+        random.shuffle(password_list)
+        return ''.join(password_list)
+
+    def reset_password(self, id, allowed_roles):
+        if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            return "Fail, Session expired" if not self.session.is_valid() else "Must be atleast system admin to perform this action."
+        if auth.get_role_id(id) not in allowed_roles or self.session:
+            return f"You can't reset the password of a user with role {auth.get_role_id(id)}"
+
+        temp_password = self.generate_temp_password()
+        password_hash = bcrypt.hashpw(temp_password.encode(), bcrypt.gensalt())
+
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE users 
+                SET password_hash = ?, must_change_password = 1
+                WHERE id = ?
+            """, (password_hash, id))
+            conn.commit()
+
+        return f"New password for user {id}: {temp_password}"
         
     def delete_account(self) -> bool:
         print("Delete account functionality is not implemented yet.")
