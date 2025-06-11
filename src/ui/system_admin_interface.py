@@ -1,5 +1,6 @@
 import sys
 from services.SystemAdminService import SystemAdminService
+from services.ServiceEngineerService import ServiceEngineerService
 from models.Session import Session
 from ui.menu_utils import navigate_menu, flush_input, clear, click_to_return
 from ui.super_admin_interface import user_menu
@@ -149,3 +150,22 @@ def traveler_operations_menu(system_admin_service):
 
         elif choice == "Back":
             return
+        
+def scooter_operations_menu(system_admin_service):
+    menu_options = ["Add Scooter" , "Update Scooter", "Delete Scooter", "Search Scooter", "Exit"]
+
+    while True:
+        choice = navigate_menu(menu_options)
+
+        if choice == "Add Scooter":
+            system_admin_service.add_scooter()
+        elif choice == "Update Scooter":
+            system_admin_service.update_scooter()
+        elif choice == "Delete Scooter":
+            system_admin_service.delete_scooter()
+        elif choice == "Search Scooter":
+            clear()
+            flush_input()
+            scooter_id = input("Enter scooter ID to check status: ")
+            system_admin_service.search_scooter(scooter_id)
+            click_to_return()

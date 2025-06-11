@@ -30,8 +30,23 @@ class ServiceEngineerService():
             return
         print(f"Updated scooter {scooter_id}.")
 
-    def check_scooter_status(self, scooter_id):
-        if (not self.session.is_valid()):
+    def search_scooter(self, scooter_id):
+        if not self.session.is_valid():
             print("session expired")
             return
-        print(f"Scooter {scooter_id} status: OK.")
+
+        # Connect to the database
+        conn = sqlite3.connect('src/data/urban_mobility.db')
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("SELECT * FROM scooters WHERE id = ?", (scooter_id,))
+            scooter = cursor.fetchone()
+            if scooter:
+                print(f"Scooter found: {scooter}")
+            else:
+                print(f"No scooter found with ID {scooter_id}.")
+        except sqlite3.Error as e:
+            print(f"Database error: {e}")
+        finally:
+            conn.close()
