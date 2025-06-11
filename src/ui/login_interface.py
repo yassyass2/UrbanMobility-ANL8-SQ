@@ -38,7 +38,7 @@ def start_interface():
             session = Session(username, role)
 
             print(f"\n[INFO] Welcome, {username}! Role: {role}")
-
+            
             if role == "super_admin":
                 super_admin_interface(session)
             elif role == "system_admin":
