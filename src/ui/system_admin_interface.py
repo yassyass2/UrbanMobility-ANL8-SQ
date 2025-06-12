@@ -218,24 +218,103 @@ def traveller_operations_menu(system_admin_service):
 
         elif choice == "Update Traveller":
             clear()
-            traveller_id = input("Enter Traveller ID to update: ").strip()
-            updated_data = system_admin_service.update_traveller(traveller_id)
-            if updated_data:
-                print(f"Traveller updated: {updated_data}")
-            else:
-                print("Failed to update traveller.")
             flush_input()
+            print("====== MODIFY A TRAVELLER ======")
+
+            travellers = system_admin_service.traveller_overview()
+            if not travellers:
+                print("No travellers found.")
+                click_to_return()
+                continue
+
+            for t in travellers:
+                print(f"[TRAVELLER] ID: {t['id']} | Name: {t['name']} | Registered: {t['registration_date']}")
+
+            traveller_id = input("\nEnter the ID of the traveller: ").strip()
+            if not traveller_id.isdigit():
+                print("Invalid ID.")
+                click_to_return()
+                continue
+
+            traveller = system_admin_service.get_traveller_by_id(int(traveller_id))
+            if not traveller:
+                print("Traveller not found.")
+                click_to_return()
+                continue
+
+            print("\nCurrent Traveller Details:")
+            for key, value in traveller.items():
+                if key not in ["id", "registration_date"]:
+                    print(f"  {key.replace('_', ' ').title()}: {value}")
+
+            field_map = {
+                1: "first_name",
+                2: "last_name",
+                3: "birthday",
+                4: "gender",
+                5: "street",
+                6: "house_number",
+                7: "zip_code",
+                8: "city",
+                9: "email",
+                10: "mobile",
+                11: "license_number"
+            }
+
+            print("\nWhich fields do you want to update?")
+            for num, name in field_map.items():
+                print(f"{num}. {name.replace('_', ' ').title()}")
+
+            selection = input("Enter numbers separated by commas (e.g. 1,4,7): ").strip()
+            try:
+                selected_fields = [int(s) for s in selection.split(",") if int(s) in field_map]
+            except ValueError:
+                print("Invalid selection.")
+                click_to_return()
+                continue
+
+            updated_data = {}
+            for field_id in selected_fields:
+                field = field_map[field_id]
+                old_value = traveller.get(field, "[not found]")
+                new_value = input(f"New {field.replace('_', ' ').title()} (was: {old_value}): ").strip()
+                if new_value:
+                    updated_data[field] = new_value
+
+            result = system_admin_service.update_traveller(int(traveller_id), updated_data)
+            print(result)
             click_to_return()
 
         elif choice == "Delete Traveller":
             clear()
-            traveller_id = input("Enter Traveller ID to delete: ").strip()
-            if system_admin_service.delete_traveller(traveller_id):
-                print("Traveller deleted successfully.")
-            else:
-                print("Failed to delete traveller.")
             flush_input()
+            print("====== DELETE A TRAVELLER ======")
+
+            travellers = system_admin_service.traveller_overview()
+            if not travellers:
+                print("No travellers found.")
+                click_to_return()
+                continue
+
+            for t in travellers:
+                print(f"[TRAVELLER] ID: {t['id']} | Name: {t['name']} | Registered: {t['registration_date']}")
+
+            traveller_id = input("\nEnter the ID of the traveller to delete: ").strip()
+            if not traveller_id.isdigit():
+                print("Invalid ID.")
+                click_to_return()
+                continue
+
+            confirm = input("Are you sure you want to delete this traveller? (yes/no): ").strip().lower()
+            if confirm != "yes" and confirm != "y":
+                print("Deletion cancelled.")
+                click_to_return()
+                continue
+
+            result = system_admin_service.delete_traveller(int(traveller_id))
+            print(result)
             click_to_return()
+
 
         elif choice == "View Travellers":
             while True:

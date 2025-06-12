@@ -6,7 +6,11 @@ from models.User import User
 from services.ServiceEngineerService import ServiceEngineerService
 from services import auth
 import string, random
-
+from services.validation import (
+    is_valid_name, is_valid_birthday, is_valid_gender, is_valid_street,
+    is_valid_house_number, is_valid_zip, is_valid_city, is_valid_email_and_domain,
+    is_valid_mobile, is_valid_license
+)
 from cryptography.fernet import Fernet
 import hashlib
 from datetime import date
@@ -17,6 +21,8 @@ DB_FILE = "src/data/urban_mobility.db"
 class SystemAdminService(ServiceEngineerService):
     def __init__(self, session: Session):
         super().__init__(session)
+
+
 
     def user_overview(self) -> list[User]:
         if (not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]):
@@ -168,6 +174,59 @@ class SystemAdminService(ServiceEngineerService):
         print("View backups functionality is not implemented yet.")
         return []
     
+    def traveller_overview(self) -> list[dict]:
+        if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            return []
+
+        cipher = Fernet(os.getenv("FERNET_KEY").encode())
+        overview = []
+
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, first_name, last_name, registration_date FROM travellers")
+            rows = cursor.fetchall()
+
+            for row in rows:
+                traveller_id = row[0]
+                first_name = row[1]
+                last_name = row[2]
+                reg_date = row[3]
+                overview.append({
+                    "id": traveller_id,
+                    "name": f"{first_name} {last_name}",
+                    "registration_date": reg_date
+                })
+
+        return overview
+    
+    def get_traveller_by_id(self, traveller_id: int) -> dict | None:
+        try:
+            cipher = Fernet(os.getenv("FERNET_KEY").encode())
+
+            with sqlite3.connect(DB_FILE) as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM travellers WHERE id = ?", (traveller_id,))
+                row = cursor.fetchone()
+
+                if not row:
+                    return None
+
+                fields = [
+                    "id", "first_name", "last_name", "birthday", "gender",
+                    "street", "house_number", "zip_code", "city", "email",
+                    "mobile", "license_number", "registration_date"
+                ]
+
+                decrypted = dict(zip(fields, row))
+                for key in ["street", "zip_code", "city", "email", "mobile", "license_number"]:
+                    if decrypted[key]:
+                        decrypted[key] = cipher.decrypt(decrypted[key].encode()).decode()
+
+                return decrypted
+        except Exception as e:
+            print(f"[ERROR] Failed to load traveller: {e}")
+            return None
+    
     def add_traveller(self, traveller_data: dict) -> str:
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
             return "Unauthorized or session expired."
@@ -216,12 +275,95 @@ class SystemAdminService(ServiceEngineerService):
         except Exception as e:
             return f"[ERROR] Failed to add traveller: {e}"
 
-    def update_traveller(self, traveller_id: int, updated_data: dict) -> bool:
-        print("Update traveller functionality is not implemented yet.")
+    def update_traveller(self, traveller_id: int, updated_data: dict) -> str:
+        if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            return "Unauthorized or session expired."
 
-    def delete_traveller(self, traveller_id: int) -> bool:
-        print("Delete traveller functionality is not implemented yet.")
-        return False
+        if not updated_data:
+            return "No fields provided to update."
+
+
+
+        cities = ["Rotterdam", "Delft", "Schiedam", "The Hague", "Leiden",
+                "Gouda", "Zoetermeer", "Spijkenisse", "Vlaardingen", "Barendrecht"]
+        
+        validators = {
+            "first_name": is_valid_name,
+            "last_name": is_valid_name,
+            "birthday": is_valid_birthday,
+            "gender": is_valid_gender,
+            "street": is_valid_street,
+            "house_number": is_valid_house_number,
+            "zip_code": is_valid_zip,
+            "city": lambda val: is_valid_city(val, cities),
+            "email": is_valid_email_and_domain,
+            "mobile": is_valid_mobile,
+            "license_number": is_valid_license,
+        }
+
+        sensitive_fields = {"street", "zip_code", "city", "email", "mobile", "license_number"}
+
+        cipher = Fernet(os.getenv("FERNET_KEY").encode())
+        final_updates = {}
+
+        for key, value in updated_data.items():
+            validator = validators.get(key)
+            if validator and validator(value):
+                if key == "house_number":
+                    final_updates[key] = int(value)
+                elif key in sensitive_fields:
+                    final_updates[key] = cipher.encrypt(value.encode()).decode('utf-8')
+                else:
+                    final_updates[key] = value
+            else:
+                continue
+
+        if not final_updates:
+            return "No valid fields provided to update."
+
+        try:
+            fields_query = ", ".join(f"{field} = ?" for field in final_updates)
+            values = list(final_updates.values())
+
+            with sqlite3.connect(DB_FILE) as conn:
+                cursor = conn.cursor()
+                query = f"UPDATE travellers SET {fields_query} WHERE id = ?"
+                cursor.execute(query, values + [traveller_id])
+                conn.commit()
+
+                if cursor.rowcount == 0:
+                    return f"No traveller found with ID {traveller_id}."
+                return f"Traveller {traveller_id} successfully updated."
+
+        except Exception as e:
+            return f"[ERROR] Failed to update traveller: {e}"
+
+
+
+    def delete_traveller(self, traveller_id: int) -> str:
+        if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            return "Unauthorized or session expired."
+
+        try:
+            cipher = Fernet(os.getenv("FERNET_KEY").encode())
+
+            with sqlite3.connect(DB_FILE) as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT first_name, last_name FROM travellers WHERE id = ?", (traveller_id,))
+                row = cursor.fetchone()
+
+                if not row:
+                    return "Traveller not found."
+
+                full_name = f"{row[0]} {row[1]}"
+                cursor.execute("DELETE FROM travellers WHERE id = ?", (traveller_id,))
+                conn.commit()
+
+            return f"Traveller {full_name} with ID {traveller_id} successfully deleted."
+
+        except Exception as e:
+            return f"[ERROR] Failed to delete traveller: {e}"
+
     
     def view_travellers_by_id(self, traveller_id):
         if not self.session.is_valid():
