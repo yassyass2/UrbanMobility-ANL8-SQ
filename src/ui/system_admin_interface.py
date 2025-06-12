@@ -27,7 +27,7 @@ def system_admin_interface(session: Session):
             sys.exit()
 
 def account_settings_menu(system_admin_service):
-    menu_options = ["Change Password", "Delete Account","Back"]
+    menu_options = ["Change Password", "Delete Account", "Update Password", "Back"]
     
     while True:
         choice = navigate_menu(menu_options)
@@ -54,6 +54,16 @@ def account_settings_menu(system_admin_service):
             else:
                 print("Account deletion cancelled.")
             flush_input()
+            click_to_return()
+        
+        elif choice == "Update Password":
+            clear()
+            flush_input()
+            new_password = system_admin_service.update_password()
+            if new_password:
+                print(f"Password updated successfully to: {new_password}")
+            else:
+                print("Failed to update password.")
             click_to_return()
 
         elif choice == "Back":
@@ -166,7 +176,7 @@ def traveller_operations_menu(system_admin_service):
             return
         
 def scooter_operations_menu(system_admin_service):
-    menu_options = ["Add Scooter" , "Update Scooter", "Delete Scooter", "Search Scooter", "Exit"]
+    menu_options = ["Add Scooter" , "Update Scooter", "Delete Scooter", "Search Scooter", "Back"]
 
     while True:
         choice = navigate_menu(menu_options)
@@ -200,3 +210,8 @@ def scooter_operations_menu(system_admin_service):
                     clear();
                     flush_input()
                     return
+        elif choice == "Back":
+            clear();
+            flush_input()
+            return
+                
