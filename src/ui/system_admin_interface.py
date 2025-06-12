@@ -4,6 +4,11 @@ from services.ServiceEngineerService import ServiceEngineerService
 from models.Session import Session
 from ui.menu_utils import navigate_menu, flush_input, clear, click_to_return
 from ui.super_admin_interface import user_menu
+from services.validation import (
+                is_valid_name, is_valid_birthday, is_valid_gender,
+                is_valid_street, is_valid_house_number, is_valid_zip,
+                is_valid_mobile, is_valid_license, is_valid_city, is_valid_email_and_domain
+            )
 
 
 
@@ -117,11 +122,97 @@ def traveller_operations_menu(system_admin_service):
 
         if choice == "Add Traveller":
             clear()
-            traveller_data = system_admin_service.add_traveller()
-            if traveller_data:
-                print(f"Traveller added: {traveller_data}")
-            else:
-                print("Failed to add traveller.")
+            flush_input()
+            print("====== Add New Traveller ======")
+
+            cities = ["Rotterdam", "Delft", "Schiedam", "The Hague", "Leiden",
+                      "Gouda", "Zoetermeer", "Spijkenisse", "Vlaardingen", "Barendrecht"]
+
+            try:
+                while True:
+                    first_name = input("First name: ").strip()
+                    if is_valid_name(first_name): break
+                    print("Invalid first name.")
+
+                while True:
+                    last_name = input("Last name: ").strip()
+                    if is_valid_name(last_name): break
+                    print("Invalid last name.")
+
+                while True:
+                    birthday = input("Birthday (YYYY-MM-DD): ").strip()
+                    if is_valid_birthday(birthday): break
+                    print("Invalid birthday. Use YYYY-MM-DD and must be in the past.")
+
+                while True:
+                    gender = input("Gender (male/female): ").strip().lower()
+                    if is_valid_gender(gender): break
+                    print("Gender must be 'male' or 'female'.")
+
+                while True:
+                    street = input("Street: ").strip()
+                    if is_valid_street(street): break
+                    print("Street must contain only letters and spaces.")
+
+                while True:
+                    house_number_input = input("House number: ").strip()
+                    if is_valid_house_number(house_number_input):
+                        house_number = int(house_number_input)
+                        break
+                    print("Invalid house number.")
+
+                while True:
+                    zip_code = input("Zip Code (e.g. 1234AB): ").strip().upper()
+                    if is_valid_zip(zip_code): break
+                    print("Invalid zip code format.")
+
+                while True:
+                    for i, c in enumerate(cities, start=1):
+                        print(f"{i}. {c}")
+                    selected = input("Choose city number (1-10): ").strip()
+                    if selected.isdigit() and is_valid_city(cities[int(selected)-1], cities):
+                        city = cities[int(selected)-1]
+                        break
+                    print("Invalid city selection.")
+
+                while True:
+                    email = input("E-mail (e.g. example@gmail.com): ").strip()
+                    if is_valid_email_and_domain(email):
+                        break
+                    else:
+                        print("Email already exists. Please use a different email.")
+
+
+                while True:
+                    mobile = input("Mobile number (8 digits only): +31-6-").strip()
+                    if is_valid_mobile(mobile): break
+                    print("Mobile must be exactly 8 digits.")
+
+                while True:
+                    license_number = input("Driving license (e.g. 1234567890): ").strip().upper()
+                    if is_valid_license(license_number): break
+                    print("Invalid license number format.")
+
+                traveler_data = {
+                    "first_name": first_name,
+                    "last_name": last_name,
+                    "birthday": birthday,
+                    "gender": gender,
+                    "street": street,
+                    "house_number": house_number,
+                    "zip_code": zip_code,
+                    "city": city,
+                    "email": email,
+                    "mobile": mobile,
+                    "license_number": license_number
+                }
+
+                result = system_admin_service.add_traveller(traveler_data)
+                print(result)
+
+            except Exception as e:
+                print(f"[ERROR] Unexpected input error: {e}")
+
             flush_input()
             click_to_return()
 
@@ -166,12 +257,12 @@ def traveller_operations_menu(system_admin_service):
                     click_to_return()
 
                 elif choice == "Back":
-                        clear();
+                        clear()
                         flush_input()
                         return
 
         elif choice == "Back":
-            clear();
+            clear()
             flush_input()
             return
         
@@ -207,11 +298,11 @@ def scooter_operations_menu(system_admin_service):
                     click_to_return()
 
                 elif choice == "Back":
-                    clear();
+                    clear()
                     flush_input()
                     return
         elif choice == "Back":
-            clear();
+            clear()
             flush_input()
             return
                 

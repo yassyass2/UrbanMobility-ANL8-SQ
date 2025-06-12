@@ -168,8 +168,53 @@ class SystemAdminService(ServiceEngineerService):
         print("View backups functionality is not implemented yet.")
         return []
     
-    def add_traveller(self, traveller_data: dict) -> bool:
-        print("Add traveller functionality is not implemented yet.")
+    def add_traveller(self, traveller_data: dict) -> str:
+        if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            return "Unauthorized or session expired."
+
+        try:
+            birthday_db_format = traveller_data["birthday"]
+
+            cipher = Fernet(os.getenv("FERNET_KEY").encode())
+            registration_date = date.today().strftime('%Y-%m-%d')
+
+            encrypted_fields = {
+                "street": cipher.encrypt(traveller_data["street"].encode()).decode('utf-8'),
+                "zip_code": cipher.encrypt(traveller_data["zip_code"].encode()).decode('utf-8'),
+                "city": cipher.encrypt(traveller_data["city"].encode()).decode('utf-8'),
+                "email": cipher.encrypt(traveller_data["email"].encode()).decode('utf-8'),
+                "mobile": cipher.encrypt(traveller_data["mobile"].encode()).decode('utf-8'),
+                "license_number": cipher.encrypt(traveller_data["license_number"].encode()).decode('utf-8'),
+            }
+
+            with sqlite3.connect(DB_FILE) as conn:
+                cursor = conn.cursor()
+                cursor.execute("""
+                    INSERT INTO travellers (
+                        first_name, last_name, birthday, gender,
+                        street, house_number, zip_code, city,
+                        email, mobile, license_number, registration_date
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """, (
+                    traveller_data["first_name"],
+                    traveller_data["last_name"],
+                    birthday_db_format,
+                    traveller_data["gender"],
+                    encrypted_fields["street"],
+                    traveller_data["house_number"],
+                    encrypted_fields["zip_code"],
+                    encrypted_fields["city"],
+                    encrypted_fields["email"],
+                    encrypted_fields["mobile"],
+                    encrypted_fields["license_number"],
+                    registration_date
+                ))
+
+                conn.commit()
+                return f"Traveller added with ID: {cursor.lastrowid}"
+
+        except Exception as e:
+            return f"[ERROR] Failed to add traveller: {e}"
 
     def update_traveller(self, traveller_id: int, updated_data: dict) -> bool:
         print("Update traveller functionality is not implemented yet.")
