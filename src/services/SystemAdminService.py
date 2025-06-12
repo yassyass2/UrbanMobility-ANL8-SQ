@@ -178,7 +178,46 @@ class SystemAdminService(ServiceEngineerService):
         print("Delete traveller functionality is not implemented yet.")
         return False
     
-    def view_travellers(self) -> list:
-        print("View travellers functionality is not implemented yet.")
-        return []
-    
+    def view_travellers_by_id(self, traveller_id):
+        if not self.session.is_valid():
+            print("Session Expired")
+            return
+
+        conn = sqlite3.connect('src/data/urban_mobility.db')
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("SELECT * FROM travellers WHERE id LIKE ?", (f"%{traveller_id}%",))   
+            travellers = cursor.fetchall()
+            if travellers:
+                print("Travellers found:")
+                for traveller in travellers:
+                    print(traveller)
+            else:
+                print(f"No travellers found containing ID: {traveller_id}")
+        except sqlite3.Error as e:
+            print(f"Database error: {e}")
+        finally:
+            conn.close()
+
+    def view_travellers_by_last_name(self, traveller_last_name):
+        if not self.session.is_valid():
+            print("Session Expired")
+            return
+
+        conn = sqlite3.connect('src/data/urban_mobility.db')
+        cursor = conn.cursor()
+
+        try:
+            cursor.execute("SELECT * FROM travellers WHERE last_name LIKE ?", (f"%{traveller_last_name}%",))   
+            travellers = cursor.fetchall()
+            if travellers:
+                print("Travellers found:")
+                for traveller in travellers:
+                    print(traveller)
+            else:
+                print(f"No travellers found containing Last Name: {traveller_last_name}")
+        except sqlite3.Error as e:
+            print(f"Database error: {e}")
+        finally:
+            conn.close()
