@@ -8,7 +8,7 @@ from ui.super_admin_interface import user_menu
 
 
 def system_admin_interface(session: Session):
-    menu_options = ["User Operations", "Account Settings", "Backups", "Traveler Operations", "Scooter Operations", "Exit"]
+    menu_options = ["User Operations", "Account Settings", "Backups", "Traveller Operations", "Scooter Operations", "Exit"]
     system_admin_service = SystemAdminService(session)
 
     while True:
@@ -19,8 +19,8 @@ def system_admin_interface(session: Session):
             account_settings_menu(system_admin_service)
         elif choice == "Backups":
             backup_menu(system_admin_service)
-        elif choice == "Traveler Operations":
-            traveler_operations_menu(system_admin_service)
+        elif choice == "Traveller Operations":
+            traveller_operations_menu(system_admin_service)
         elif choice == "Scooter Operations":
             scooter_operations_menu(system_admin_service)
         else:
@@ -99,56 +99,70 @@ def backup_menu(system_admin_service):
         elif choice == "Back":
             return
         
-def traveler_operations_menu(system_admin_service):
-    menu_options = ["Add Traveler", "Update Traveler", "Delete Traveler", "View Travelers", "Back"]
+def traveller_operations_menu(system_admin_service):
+    menu_options = ["Add Traveller", "Update Traveller", "Delete Traveller", "View Travellers", "Back"]
 
     while True:
         choice = navigate_menu(menu_options)
 
-        if choice == "Add Traveler":
+        if choice == "Add Traveller":
             clear()
-            traveler_data = system_admin_service.add_traveler()
-            if traveler_data:
-                print(f"Traveler added: {traveler_data}")
+            traveller_data = system_admin_service.add_traveller()
+            if traveller_data:
+                print(f"Traveller added: {traveller_data}")
             else:
-                print("Failed to add traveler.")
+                print("Failed to add traveller.")
             flush_input()
             click_to_return()
 
-        elif choice == "Update Traveler":
+        elif choice == "Update Traveller":
             clear()
-            traveler_id = input("Enter Traveler ID to update: ").strip()
-            updated_data = system_admin_service.update_traveler(traveler_id)
+            traveller_id = input("Enter Traveller ID to update: ").strip()
+            updated_data = system_admin_service.update_traveller(traveller_id)
             if updated_data:
-                print(f"Traveler updated: {updated_data}")
+                print(f"Traveller updated: {updated_data}")
             else:
-                print("Failed to update traveler.")
+                print("Failed to update traveller.")
             flush_input()
             click_to_return()
 
-        elif choice == "Delete Traveler":
+        elif choice == "Delete Traveller":
             clear()
-            traveler_id = input("Enter Traveler ID to delete: ").strip()
-            if system_admin_service.delete_traveler(traveler_id):
-                print("Traveler deleted successfully.")
+            traveller_id = input("Enter Traveller ID to delete: ").strip()
+            if system_admin_service.delete_traveller(traveller_id):
+                print("Traveller deleted successfully.")
             else:
-                print("Failed to delete traveler.")
+                print("Failed to delete traveller.")
             flush_input()
             click_to_return()
 
-        elif choice == "View Travelers":
-            clear()
-            travelers = system_admin_service.view_travelers()
-            if travelers:
-                print("Travelers List:")
-                for traveler in travelers:
-                    print(traveler)
-            else:
-                print("No travelers found.")
-            flush_input()
-            click_to_return()
+        elif choice == "View Travellers":
+            while True:
+                menu_options = ["Search By ID", "Search By Last Name", "Back"]
+                choice = navigate_menu(menu_options)
+
+                if choice == "Search By ID":
+                    clear()
+                    flush_input()
+                    traveller_id = input("Enter Traveller ID: ")
+                    system_admin_service.view_travellers_by_id(traveller_id)
+                    click_to_return()
+
+                elif choice == "Search By Last Name":
+                    clear()
+                    flush_input()
+                    traveller_name = input("Enter Traveller Last Name: ")
+                    system_admin_service.view_travellers_by_last_name(traveller_name)
+                    click_to_return()
+
+                elif choice == "Back":
+                        clear();
+                        flush_input()
+                        return
 
         elif choice == "Back":
+            clear();
+            flush_input()
             return
         
 def scooter_operations_menu(system_admin_service):
@@ -164,8 +178,25 @@ def scooter_operations_menu(system_admin_service):
         elif choice == "Delete Scooter":
             system_admin_service.delete_scooter()
         elif choice == "Search Scooter":
-            clear()
-            flush_input()
-            scooter_id = input("Enter scooter ID to check status: ")
-            system_admin_service.search_scooter(scooter_id)
-            click_to_return()
+            while True:
+                menu_options = ["Search By ID", "Search By Name", "Back"]
+                choice = navigate_menu(menu_options)
+
+                if choice == "Search By ID":
+                    clear()
+                    flush_input()
+                    scooter_id = input("Enter scooter ID: ")
+                    system_admin_service.search_scooter_by_id(scooter_id)
+                    click_to_return()
+
+                elif choice == "Search By Name":
+                    clear()
+                    flush_input()
+                    scooter_name = input("Enter scooter Name: ")
+                    system_admin_service.search_scooter_by_name(scooter_name)
+                    click_to_return()
+
+                elif choice == "Back":
+                    clear();
+                    flush_input()
+                    return
