@@ -129,10 +129,7 @@ def backup_menu(super_admin_service):
         
         if choice == "Create Backup":
             clear()
-            if super_admin_service.create_backup():
-                print("Backup created successfully.")
-            else:
-                print("Failed to create backup.")
+            print(super_admin_service.create_backup()[1])
             flush_input()
             click_to_return()
 
@@ -218,12 +215,12 @@ def traveller_operations_menu(super_admin_service):
                     click_to_return()
 
                 elif choice == "Back":
-                        clear();
+                        clear()
                         flush_input()
                         return
 
         elif choice == "Back":
-            clear();
+            clear()
             flush_input()
             return
 
@@ -259,11 +256,11 @@ def scooter_operations_menu(super_admin_service):
                     click_to_return()
 
                 elif choice == "Back":
-                    clear();
+                    clear()
                     flush_input()
                     return
                 
         elif choice == "Back":
-            clear();
+            clear()
             flush_input()
             return
