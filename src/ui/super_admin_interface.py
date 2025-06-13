@@ -145,7 +145,7 @@ def backup_menu(super_admin_service):
 
         elif choice == "View Backups":
             clear()
-            backups = super_admin_service.view_backups()
+            backups = super_admin_service.view_all_backups()
             if backups:
                 print("Available Backups:")
                 for backup in backups:

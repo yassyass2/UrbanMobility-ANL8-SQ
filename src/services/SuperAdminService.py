@@ -33,4 +33,16 @@ class SuperAdminService(SystemAdminService):
         except Exception as e:
             return (False, f"Backup failed: {e}")
         
-        
+    def view_all_backups(self):
+        if not self.session.is_valid() or self.session.role not in ["super_admin"]:
+            return "Fail, Session expired" if not self.session.is_valid() else "Must be super admin to perform this action."
+
+        if not os.path.exists(BACKUP_DIR):
+            return []
+
+        backups = [
+            filename for filename in os.listdir(BACKUP_DIR)
+            if filename.endswith(".zip") and os.path.isfile(os.path.join(BACKUP_DIR, filename))
+        ]
+
+        return sorted(backups)
