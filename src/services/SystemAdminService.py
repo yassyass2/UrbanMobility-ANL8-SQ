@@ -6,12 +6,14 @@ from models.User import User
 from services.ServiceEngineerService import ServiceEngineerService
 from services import auth
 import string, random
+import zipfile
 
 from cryptography.fernet import Fernet
 import hashlib
-from datetime import date
+from datetime import date, datetime
 
 DB_FILE = "src/data/urban_mobility.db"
+BACKUP_DIR = "system_backups"
 
 
 class SystemAdminService(ServiceEngineerService):
@@ -158,15 +160,28 @@ class SystemAdminService(ServiceEngineerService):
 
         return f"Temporary password for user {id} succesfully set"
 
-    def create_backup(self) -> bool:
-        print("Create backup functionality is not implemented yet.")
+    def create_backup(self) -> tuple[bool, str]:
+        if not self.session.is_valid() or self.session.role not in ["super_admin"]:
+            return "Fail, Session expired" if not self.session.is_valid() else "Must be super admin to perform this action."
+        
+        if not os.path.exists(DB_FILE):
+            return (False, f"Database file '{DB_FILE}' does not exist.")
 
-    def restore_backup(self) -> bool:
+        os.makedirs(BACKUP_DIR, exist_ok=True)
+
+        backup_timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        backup_filename = f"backup_{backup_timestamp}.zip"
+        backup_path = os.path.join(BACKUP_DIR, backup_filename)
+
+        try:
+            with zipfile.ZipFile(backup_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                zipf.write(DB_FILE, arcname=os.path.basename(DB_FILE))
+            return (True, f"Backup created at: {backup_path}")
+        except Exception as e:
+            return (False, f"Backup failed: {e}")
+
+    def restore_backup_with_code(self) -> bool:
         print("Restore backup functionality is not implemented yet.")
-
-    def view_backups(self) -> list:
-        print("View backups functionality is not implemented yet.")
-        return []
     
     def add_traveller(self, traveller_data: dict) -> bool:
         print("Add traveller functionality is not implemented yet.")
