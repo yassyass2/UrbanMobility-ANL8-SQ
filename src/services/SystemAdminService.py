@@ -161,8 +161,8 @@ class SystemAdminService(ServiceEngineerService):
         return f"Temporary password for user {id} succesfully set"
 
     def create_backup(self) -> tuple[bool, str]:
-        if not self.session.is_valid() or self.session.role not in ["super_admin"]:
-            return "Fail, Session expired" if not self.session.is_valid() else "Must be super admin to perform this action."
+        if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            return "Fail, Session expired" if not self.session.is_valid() else "Must be atleast system admin to perform this action."
         
         if not os.path.exists(DB_FILE):
             return (False, f"Database file '{DB_FILE}' does not exist.")
