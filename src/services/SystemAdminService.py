@@ -243,23 +243,91 @@ class SystemAdminService(ServiceEngineerService):
             print(f"[ERROR] Failed to load traveller: {e}")
             return None
     
-    def add_traveller(self, traveller_data: dict) -> str:
+    def add_traveller(self) -> None:
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
-            return "Unauthorized or session expired."
+            print("Unauthorized or session expired.")
+            return
+
+        print("====== ADD NEW TRAVELLER ======")
+
+        cities = ["Rotterdam", "Delft", "Schiedam", "The Hague", "Leiden",
+                "Gouda", "Zoetermeer", "Spijkenisse", "Vlaardingen", "Barendrecht"]
 
         try:
-            birthday_db_format = traveller_data["birthday"]
+            while True:
+                first_name = input("First name: ").strip()
+                if is_valid_name(first_name): break
+                print("Invalid first name.")
 
+            while True:
+                last_name = input("Last name: ").strip()
+                if is_valid_name(last_name): break
+                print("Invalid last name.")
+
+            while True:
+                birthday = input("Birthday (YYYY-MM-DD): ").strip()
+                if is_valid_birthday(birthday): break
+                print("Invalid birthday. Use YYYY-MM-DD and must be in the past.")
+
+            while True:
+                gender = input("Gender (male/female): ").strip().lower()
+                if is_valid_gender(gender): break
+                print("Gender must be 'male' or 'female'.")
+
+            while True:
+                street = input("Street: ").strip()
+                if is_valid_street(street): break
+                print("Street must contain only letters and spaces.")
+
+            while True:
+                house_number_input = input("House number: ").strip()
+                if is_valid_house_number(house_number_input):
+                    house_number = int(house_number_input)
+                    break
+                print("Invalid house number.")
+
+            while True:
+                zip_code = input("Zip Code (e.g. 1234AB): ").strip().upper()
+                if is_valid_zip(zip_code): break
+                print("Invalid zip code format.")
+
+            while True:
+                for i, c in enumerate(cities, start=1):
+                    print(f"{i}. {c}")
+                selected = input("Choose city number (1-10): ").strip()
+                if selected.isdigit() and is_valid_city(cities[int(selected) - 1], cities):
+                    city = cities[int(selected) - 1]
+                    break
+                print("Invalid city selection.")
+
+            while True:
+                email = input("E-mail (e.g. example@gmail.com): ").strip()
+                if is_valid_email_and_domain(email):
+                    break
+                else:
+                    print("Email already exists. Please use a different email.")
+
+            while True:
+                mobile = input("Mobile number (8 digits only): +31-6-").strip()
+                if is_valid_mobile(mobile): break
+                print("Mobile must be exactly 8 digits.")
+
+            while True:
+                license_number = input("Driving license (e.g. 1234567890): ").strip().upper()
+                if is_valid_license(license_number): break
+                print("Invalid license number format.")
+
+            # Encrypt and insert into DB
             cipher = Fernet(os.getenv("FERNET_KEY").encode())
             registration_date = date.today().strftime('%Y-%m-%d')
 
             encrypted_fields = {
-                "street": cipher.encrypt(traveller_data["street"].encode()).decode('utf-8'),
-                "zip_code": cipher.encrypt(traveller_data["zip_code"].encode()).decode('utf-8'),
-                "city": cipher.encrypt(traveller_data["city"].encode()).decode('utf-8'),
-                "email": cipher.encrypt(traveller_data["email"].encode()).decode('utf-8'),
-                "mobile": cipher.encrypt(traveller_data["mobile"].encode()).decode('utf-8'),
-                "license_number": cipher.encrypt(traveller_data["license_number"].encode()).decode('utf-8'),
+                "street": cipher.encrypt(street.encode()).decode('utf-8'),
+                "zip_code": cipher.encrypt(zip_code.encode()).decode('utf-8'),
+                "city": cipher.encrypt(city.encode()).decode('utf-8'),
+                "email": cipher.encrypt(email.encode()).decode('utf-8'),
+                "mobile": cipher.encrypt(mobile.encode()).decode('utf-8'),
+                "license_number": cipher.encrypt(license_number.encode()).decode('utf-8'),
             }
 
             with sqlite3.connect(DB_FILE) as conn:
@@ -271,12 +339,12 @@ class SystemAdminService(ServiceEngineerService):
                         email, mobile, license_number, registration_date
                     ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
-                    traveller_data["first_name"],
-                    traveller_data["last_name"],
-                    birthday_db_format,
-                    traveller_data["gender"],
+                    first_name,
+                    last_name,
+                    birthday,
+                    gender,
                     encrypted_fields["street"],
-                    traveller_data["house_number"],
+                    house_number,
                     encrypted_fields["zip_code"],
                     encrypted_fields["city"],
                     encrypted_fields["email"],
@@ -286,23 +354,60 @@ class SystemAdminService(ServiceEngineerService):
                 ))
 
                 conn.commit()
-                return f"Traveller added with ID: {cursor.lastrowid}"
+                print(f"Traveller added successfully with ID: {cursor.lastrowid}")
 
         except Exception as e:
-            return f"[ERROR] Failed to add traveller: {e}"
+            print(f"[ERROR] Failed to add traveller: {e}")
 
-    def update_traveller(self, traveller_id: int, updated_data: dict) -> str:
+
+    def update_traveller(self) -> None:
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
-            return "Unauthorized or session expired."
+            print("Unauthorized or session expired.")
+            return
 
-        if not updated_data:
-            return "No fields provided to update."
+        travellers = self.traveller_overview()
+        if not travellers:
+            print("No travellers found.")
+            return
 
+        print("====== MODIFY A TRAVELLER ======")
+        for t in travellers:
+            print(f"[TRAVELLER] ID: {t['id']} | Name: {t['name']} | Registered: {t['registration_date']}")
 
+        traveller_id = input("\nEnter the ID of the traveller: ").strip()
+        if not traveller_id.isdigit():
+            print("Invalid ID.")
+            return
+
+        traveller = self.get_traveller_by_id(int(traveller_id))
+        if not traveller:
+            print("Traveller not found.")
+            return
+
+        print("\nCurrent Traveller Details:")
+        for key, value in traveller.items():
+            if key not in ["id", "registration_date"]:
+                print(f"  {key.replace('_', ' ').title()}: {value}")
+
+        field_map = {
+            1: "first_name", 2: "last_name", 3: "birthday", 4: "gender", 5: "street",
+            6: "house_number", 7: "zip_code", 8: "city", 9: "email", 10: "mobile", 11: "license_number"
+        }
+
+        print("\nWhich fields do you want to update?")
+        for num, name in field_map.items():
+            print(f"{num}. {name.replace('_', ' ').title()}")
+
+        selection = input("Enter numbers separated by commas (e.g. 1,4,7): ").strip()
+        try:
+            selected_fields = [int(s) for s in selection.split(",") if int(s) in field_map]
+        except ValueError:
+            print("Invalid selection.")
+            return
 
         cities = ["Rotterdam", "Delft", "Schiedam", "The Hague", "Leiden",
                 "Gouda", "Zoetermeer", "Spijkenisse", "Vlaardingen", "Barendrecht"]
-        
+
         validators = {
             "first_name": is_valid_name,
             "last_name": is_valid_name,
@@ -318,67 +423,91 @@ class SystemAdminService(ServiceEngineerService):
         }
 
         sensitive_fields = {"street", "zip_code", "city", "email", "mobile", "license_number"}
-
+        updated_data = {}
         cipher = Fernet(os.getenv("FERNET_KEY").encode())
-        final_updates = {}
 
-        for key, value in updated_data.items():
-            validator = validators.get(key)
-            if validator and validator(value):
-                if key == "house_number":
-                    final_updates[key] = int(value)
-                elif key in sensitive_fields:
-                    final_updates[key] = cipher.encrypt(value.encode()).decode('utf-8')
+        for field_id in selected_fields:
+            field = field_map[field_id]
+            old_value = traveller.get(field, "[not found]")
+            new_value = input(f"New {field.replace('_', ' ').title()} (was: {old_value}): ").strip()
+
+            validator = validators.get(field)
+            if validator and validator(new_value):
+                if field == "house_number":
+                    updated_data[field] = int(new_value)
+                elif field in sensitive_fields:
+                    updated_data[field] = cipher.encrypt(new_value.encode()).decode('utf-8')
                 else:
-                    final_updates[key] = value
+                    updated_data[field] = new_value
             else:
-                continue
+                print(f"Invalid input for {field.replace('_', ' ')}. Skipping.")
 
-        if not final_updates:
-            return "No valid fields provided to update."
+        if not updated_data:
+            print("No valid fields provided to update.")
+            return
 
         try:
-            fields_query = ", ".join(f"{field} = ?" for field in final_updates)
-            values = list(final_updates.values())
-
             with sqlite3.connect(DB_FILE) as conn:
                 cursor = conn.cursor()
+                fields_query = ", ".join(f"{field} = ?" for field in updated_data)
+                values = list(updated_data.values())
+
                 query = f"UPDATE travellers SET {fields_query} WHERE id = ?"
-                cursor.execute(query, values + [traveller_id])
+                cursor.execute(query, values + [int(traveller_id)])
                 conn.commit()
 
                 if cursor.rowcount == 0:
-                    return f"No traveller found with ID {traveller_id}."
-                return f"Traveller {traveller_id} successfully updated."
-
+                    print(f"No traveller found with ID {traveller_id}.")
+                else:
+                    print(f"Traveller {traveller_id} successfully updated.")
         except Exception as e:
-            return f"[ERROR] Failed to update traveller: {e}"
+            print(f"[ERROR] Failed to update traveller: {e}")
 
 
 
-    def delete_traveller(self, traveller_id: int) -> str:
+
+    def delete_traveller(self) -> None:
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
-            return "Unauthorized or session expired."
+            print("Unauthorized or session expired.")
+            return
+
+        travellers = self.traveller_overview()
+        if not travellers:
+            print("No travellers found.")
+            return
+
+        print("====== DELETE A TRAVELLER ======")
+        for t in travellers:
+            print(f"[TRAVELLER] ID: {t['id']} | Name: {t['name']} | Registered: {t['registration_date']}")
+
+        traveller_id = input("\nEnter the ID of the traveller to delete: ").strip()
+        if not traveller_id.isdigit():
+            print("Invalid ID.")
+            return
+
+        confirm = input("Are you sure you want to delete this traveller? (yes/no): ").strip().lower()
+        if confirm not in ("yes", "y"):
+            print("Deletion cancelled.")
+            return
 
         try:
-            cipher = Fernet(os.getenv("FERNET_KEY").encode())
-
             with sqlite3.connect(DB_FILE) as conn:
                 cursor = conn.cursor()
-                cursor.execute("SELECT first_name, last_name FROM travellers WHERE id = ?", (traveller_id,))
+                cursor.execute("SELECT first_name, last_name FROM travellers WHERE id = ?", (int(traveller_id),))
                 row = cursor.fetchone()
 
                 if not row:
-                    return "Traveller not found."
+                    print("Traveller not found.")
+                    return
 
                 full_name = f"{row[0]} {row[1]}"
-                cursor.execute("DELETE FROM travellers WHERE id = ?", (traveller_id,))
+                cursor.execute("DELETE FROM travellers WHERE id = ?", (int(traveller_id),))
                 conn.commit()
 
-            return f"Traveller {full_name} with ID {traveller_id} successfully deleted."
-
+            print(f"Traveller {full_name} with ID {traveller_id} successfully deleted.")
         except Exception as e:
-            return f"[ERROR] Failed to delete traveller: {e}"
+            print(f"[ERROR] Failed to delete traveller: {e}")
+
 
     
     def view_travellers_by_id(self, traveller_id):

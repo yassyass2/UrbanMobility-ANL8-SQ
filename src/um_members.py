@@ -8,7 +8,7 @@ from ui.menu_utils import clear
 def main():
     load_dotenv()
     clear()
-    
+
     # initialize_database()
 
     start_interface()

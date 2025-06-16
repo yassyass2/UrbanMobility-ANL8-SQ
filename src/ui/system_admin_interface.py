@@ -123,196 +123,19 @@ def traveller_operations_menu(system_admin_service):
         if choice == "Add Traveller":
             clear()
             flush_input()
-            print("====== Add New Traveller ======")
-
-            cities = ["Rotterdam", "Delft", "Schiedam", "The Hague", "Leiden",
-                      "Gouda", "Zoetermeer", "Spijkenisse", "Vlaardingen", "Barendrecht"]
-
-            try:
-                while True:
-                    first_name = input("First name: ").strip()
-                    if is_valid_name(first_name): break
-                    print("Invalid first name.")
-
-                while True:
-                    last_name = input("Last name: ").strip()
-                    if is_valid_name(last_name): break
-                    print("Invalid last name.")
-
-                while True:
-                    birthday = input("Birthday (YYYY-MM-DD): ").strip()
-                    if is_valid_birthday(birthday): break
-                    print("Invalid birthday. Use YYYY-MM-DD and must be in the past.")
-
-                while True:
-                    gender = input("Gender (male/female): ").strip().lower()
-                    if is_valid_gender(gender): break
-                    print("Gender must be 'male' or 'female'.")
-
-                while True:
-                    street = input("Street: ").strip()
-                    if is_valid_street(street): break
-                    print("Street must contain only letters and spaces.")
-
-                while True:
-                    house_number_input = input("House number: ").strip()
-                    if is_valid_house_number(house_number_input):
-                        house_number = int(house_number_input)
-                        break
-                    print("Invalid house number.")
-
-                while True:
-                    zip_code = input("Zip Code (e.g. 1234AB): ").strip().upper()
-                    if is_valid_zip(zip_code): break
-                    print("Invalid zip code format.")
-
-                while True:
-                    for i, c in enumerate(cities, start=1):
-                        print(f"{i}. {c}")
-                    selected = input("Choose city number (1-10): ").strip()
-                    if selected.isdigit() and is_valid_city(cities[int(selected)-1], cities):
-                        city = cities[int(selected)-1]
-                        break
-                    print("Invalid city selection.")
-
-                while True:
-                    email = input("E-mail (e.g. example@gmail.com): ").strip()
-                    if is_valid_email_and_domain(email):
-                        break
-                    else:
-                        print("Email already exists. Please use a different email.")
-
-
-                while True:
-                    mobile = input("Mobile number (8 digits only): +31-6-").strip()
-                    if is_valid_mobile(mobile): break
-                    print("Mobile must be exactly 8 digits.")
-
-                while True:
-                    license_number = input("Driving license (e.g. 1234567890): ").strip().upper()
-                    if is_valid_license(license_number): break
-                    print("Invalid license number format.")
-
-                traveler_data = {
-                    "first_name": first_name,
-                    "last_name": last_name,
-                    "birthday": birthday,
-                    "gender": gender,
-                    "street": street,
-                    "house_number": house_number,
-                    "zip_code": zip_code,
-                    "city": city,
-                    "email": email,
-                    "mobile": mobile,
-                    "license_number": license_number
-                }
-
-                result = system_admin_service.add_traveller(traveler_data)
-                print(result)
-
-            except Exception as e:
-                print(f"[ERROR] Unexpected input error: {e}")
-
-            flush_input()
+            system_admin_service.add_traveller()
             click_to_return()
 
         elif choice == "Update Traveller":
             clear()
             flush_input()
-            print("====== MODIFY A TRAVELLER ======")
-
-            travellers = system_admin_service.traveller_overview()
-            if not travellers:
-                print("No travellers found.")
-                click_to_return()
-                continue
-
-            for t in travellers:
-                print(f"[TRAVELLER] ID: {t['id']} | Name: {t['name']} | Registered: {t['registration_date']}")
-
-            traveller_id = input("\nEnter the ID of the traveller: ").strip()
-            if not traveller_id.isdigit():
-                print("Invalid ID.")
-                click_to_return()
-                continue
-
-            traveller = system_admin_service.get_traveller_by_id(int(traveller_id))
-            if not traveller:
-                print("Traveller not found.")
-                click_to_return()
-                continue
-
-            print("\nCurrent Traveller Details:")
-            for key, value in traveller.items():
-                if key not in ["id", "registration_date"]:
-                    print(f"  {key.replace('_', ' ').title()}: {value}")
-
-            field_map = {
-                1: "first_name",
-                2: "last_name",
-                3: "birthday",
-                4: "gender",
-                5: "street",
-                6: "house_number",
-                7: "zip_code",
-                8: "city",
-                9: "email",
-                10: "mobile",
-                11: "license_number"
-            }
-
-            print("\nWhich fields do you want to update?")
-            for num, name in field_map.items():
-                print(f"{num}. {name.replace('_', ' ').title()}")
-
-            selection = input("Enter numbers separated by commas (e.g. 1,4,7): ").strip()
-            try:
-                selected_fields = [int(s) for s in selection.split(",") if int(s) in field_map]
-            except ValueError:
-                print("Invalid selection.")
-                click_to_return()
-                continue
-
-            updated_data = {}
-            for field_id in selected_fields:
-                field = field_map[field_id]
-                old_value = traveller.get(field, "[not found]")
-                new_value = input(f"New {field.replace('_', ' ').title()} (was: {old_value}): ").strip()
-                if new_value:
-                    updated_data[field] = new_value
-
-            result = system_admin_service.update_traveller(int(traveller_id), updated_data)
-            print(result)
+            system_admin_service.update_traveller()
             click_to_return()
 
         elif choice == "Delete Traveller":
             clear()
             flush_input()
-            print("====== DELETE A TRAVELLER ======")
-
-            travellers = system_admin_service.traveller_overview()
-            if not travellers:
-                print("No travellers found.")
-                click_to_return()
-                continue
-
-            for t in travellers:
-                print(f"[TRAVELLER] ID: {t['id']} | Name: {t['name']} | Registered: {t['registration_date']}")
-
-            traveller_id = input("\nEnter the ID of the traveller to delete: ").strip()
-            if not traveller_id.isdigit():
-                print("Invalid ID.")
-                click_to_return()
-                continue
-
-            confirm = input("Are you sure you want to delete this traveller? (yes/no): ").strip().lower()
-            if confirm != "yes" and confirm != "y":
-                print("Deletion cancelled.")
-                click_to_return()
-                continue
-
-            result = system_admin_service.delete_traveller(int(traveller_id))
-            print(result)
+            system_admin_service.delete_traveller()
             click_to_return()
 
 
