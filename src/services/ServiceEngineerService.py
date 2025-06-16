@@ -4,6 +4,10 @@ import sqlite3
 import sys
 import hashlib
 from models.Session import Session
+from cryptography.fernet import Fernet
+from datetime import date
+from ui.prompts.field_prompts import input_password
+from ui.menu_utils import clear
 
 DB_FILE = 'src/data/urban_mobility.db'
 
@@ -16,11 +20,12 @@ class ServiceEngineerService():
             print("Session expired")
             return
 
+        username = self.session.user
+        username_hash = hashlib.sha256(username.encode()).hexdigest()
+
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
         try:
-            username = self.session.user
-            username_hash = hashlib.sha256(username.encode()).hexdigest()
             cursor.execute("SELECT password_hash FROM users WHERE username_hash = ?", (username_hash,))
             result = cursor.fetchone()
             if not result:
@@ -29,34 +34,47 @@ class ServiceEngineerService():
 
             stored_hash = result[0]
 
-            old_password = input("Enter your current password: ").strip()
+            # OLD PASSWORD
+            old_password = input_password("Enter your current password: ").strip()
+            if old_password is None:
+                return
             if not bcrypt.checkpw(old_password.encode(), stored_hash):
                 print("Incorrect current password.")
                 return
 
-            # Ask for new password
+            # NEW PASSWORD ENTRY + CONFIRMATION
             while True:
-                new_password = input("Enter new password: ").strip()
+                print("Password rules: between 12 and 30 chars, at least 1 lowercase, 1 uppercase, 1 digit, and 1 symbol")
+                new_password = input_password("Enter new password: ").strip()
+                if new_password is None:
+                    return
+
+                # VALIDATION
                 if not (12 <= len(new_password) <= 30):
-                    print("Password must be between 12 and 30 characters.")
-                    continue
+                    clear(); continue
                 if not any(c.islower() for c in new_password):
-                    print("Password must contain at least one lowercase letter.")
-                    continue
+                    clear(); continue
                 if not any(c.isupper() for c in new_password):
-                    print("Password must contain at least one uppercase letter.")
-                    continue
+                    clear(); continue
                 if not any(c.isdigit() for c in new_password):
-                    print("Password must contain at least one digit.")
-                    continue
+                    clear(); continue
                 if not any(c in "~!@#$%&_-+=`|\\(){}[]:;'<>,.?/" for c in new_password):
-                    print("Password must contain at least one symbol.")
-                    continue
+                    clear(); continue
+
+                # CONFIRMATION
+                confirm_password = input_password("Confirm new password: ").strip()
+                if confirm_password != new_password:
+                    clear()
+                    print("Passwords do not match."); continue
+
                 break
 
             hashed = bcrypt.hashpw(new_password.encode(), bcrypt.gensalt())
 
-            cursor.execute("UPDATE users SET password_hash = ?, must_change_password = 0 WHERE username_hash = ?", (hashed, username_hash))
+            cursor.execute(
+                "UPDATE users SET password_hash = ?, must_change_password = 0 WHERE username_hash = ?",
+                (hashed, username_hash)
+            )
             conn.commit()
             print("Password updated successfully.")
         except sqlite3.Error as e:
