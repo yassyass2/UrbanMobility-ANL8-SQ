@@ -4,11 +4,6 @@ from services.ServiceEngineerService import ServiceEngineerService
 from models.Session import Session
 from ui.menu_utils import navigate_menu, flush_input, clear, click_to_return
 from ui.super_admin_interface import user_menu
-from services.validation import (
-                is_valid_name, is_valid_birthday, is_valid_gender,
-                is_valid_street, is_valid_house_number, is_valid_zip,
-                is_valid_mobile, is_valid_license, is_valid_city, is_valid_email_and_domain
-            )
 from ui.prompts.scooter_prompts import prompt_new_scooter, prompt_update_scooter
 
 

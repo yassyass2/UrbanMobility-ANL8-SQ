@@ -7,15 +7,13 @@ from ui.prompts.scooter_prompts import *
 
 
 def super_admin_interface(session: Session):
-    menu_options = ["User Operations", "Account Settings", "Backups", "Traveller Operations", "Scooter Operations", "Exit"]
+    menu_options = ["User Operations", "Backups", "Traveller Operations", "Scooter Operations", "Exit"]
     super_admin_service = SuperAdminService(session)
 
     while True:
         choice = navigate_menu(menu_options)
         if choice == "User Operations":
             user_menu(super_admin_service)
-        elif choice == "Account Settings":
-            account_settings_menu(super_admin_service)
         elif choice == "Backups":
             backup_menu(super_admin_service)
         elif choice == "Traveller Operations":
@@ -101,39 +99,6 @@ def show_system_admins(user_service) -> int:
 
     return get_valid_admin_id(system_admins, Prompt=f"Enter the admin ID to make a restore code for: ")
 
-def account_settings_menu(super_admin_service):
-    menu_options = ["Change Password", "Delete Account","Back"]
-    
-    while True:
-        choice = navigate_menu(menu_options)
-        
-        if choice == "Change Password":
-            clear()
-            new_password = input("Enter new password: ").strip()
-            if super_admin_service.change_password(new_password):
-                print("Password changed successfully.")
-            else:
-                print("Failed to change password.")
-            flush_input()
-            click_to_return()
-
-        elif choice == "Delete Account":
-            clear()
-            confirmation = input("Are you sure you want to delete your account? (yes/no): ").strip().lower()
-            if confirmation == "yes":
-                if super_admin_service.delete_account():
-                    print("Account deleted successfully.")
-                    sys.exit()
-                else:
-                    print("Failed to delete account.")
-            else:
-                print("Account deletion cancelled.")
-            flush_input()
-            click_to_return()
-
-        elif choice == "Back":
-            return
-
 def backup_menu(super_admin_service):
     menu_options = ["Create Backup", "Restore Backup", "View Backups", "Generate Restore Code", "Show Restore Codes", "Back"]
     
@@ -212,34 +177,22 @@ def traveller_operations_menu(super_admin_service):
 
         if choice == "Add Traveller":
             clear()
-            traveller_data = super_admin_service.add_traveller()
-            if traveller_data:
-                print(f"Traveller added: {traveller_data}")
-            else:
-                print("Failed to add traveller.")
             flush_input()
+            super_admin_service.add_traveller()
             click_to_return()
 
         elif choice == "Update Traveller":
             clear()
-            traveller_id = input("Enter Traveller ID to update: ").strip()
-            updated_data = super_admin_service.update_traveller(traveller_id)
-            if updated_data:
-                print(f"Traveller updated: {updated_data}")
-            else:
-                print("Failed to update traveller.")
             flush_input()
+            super_admin_service.update_traveller()
             click_to_return()
 
         elif choice == "Delete Traveller":
             clear()
-            traveller_id = input("Enter Traveller ID to delete: ").strip()
-            if super_admin_service.delete_traveller(traveller_id):
-                print("Traveller deleted successfully.")
-            else:
-                print("Failed to delete traveller.")
             flush_input()
+            super_admin_service.delete_traveller()
             click_to_return()
+
 
         elif choice == "View Travellers":
             while True:

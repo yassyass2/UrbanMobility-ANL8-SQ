@@ -12,7 +12,7 @@ from services import auth
 from cryptography.fernet import Fernet
 import hashlib
 from datetime import date, datetime
-from ui.menu_utils import clear
+from ui.menu_utils import clear, flush_input
 from services.validation import (
     is_valid_name, is_valid_birthday, is_valid_gender, is_valid_street,
     is_valid_house_number, is_valid_zip, is_valid_city, is_valid_email_and_domain,
@@ -249,6 +249,8 @@ class SystemAdminService(ServiceEngineerService):
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
             print("Unauthorized or session expired.")
             return
+        
+        flush_input()
 
         print("====== ADD NEW TRAVELLER ======")
 
@@ -366,6 +368,8 @@ class SystemAdminService(ServiceEngineerService):
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
             print("Unauthorized or session expired.")
             return
+        
+        flush_input()
 
         travellers = self.traveller_overview()
         if not travellers:
