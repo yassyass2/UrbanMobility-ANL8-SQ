@@ -1,16 +1,10 @@
 import sys
 from services.SystemAdminService import SystemAdminService
-from services.ServiceEngineerService import ServiceEngineerService
 from models.Session import Session
 from ui.menu_utils import navigate_menu, flush_input, clear, click_to_return
 from ui.super_admin_interface import user_menu
-from services.validation import (
-                is_valid_name, is_valid_birthday, is_valid_gender,
-                is_valid_street, is_valid_house_number, is_valid_zip,
-                is_valid_mobile, is_valid_license, is_valid_city, is_valid_email_and_domain
-            )
+from services.validation import *
 from ui.prompts.scooter_prompts import prompt_new_scooter, prompt_update_scooter
-
 
 
 def system_admin_interface(session: Session):
@@ -64,26 +58,27 @@ def backup_menu(system_admin_service):
         
         if choice == "Create Backup":
             clear()
-            if system_admin_service.create_backup():
-                print("Backup created successfully.")
-            else:
-                print("Failed to create backup.")
+            print(system_admin_service.create_backup()[1])
             flush_input()
             click_to_return()
 
         elif choice == "Restore Backup":
             clear()
-            backup_id = input("Enter the ID of the backup to restore: ").strip()
-            if system_admin_service.restore_backup(backup_id):
-                print("Backup restored successfully.")
-            else:
-                print("Failed to restore backup.")
+            if not system_admin_service.view_restore_codes():
+                click_to_return()
+                continue
+
+            restore_record = validate_restore_code(system_admin_service.session.user)
+            if restore_record:
+                system_admin_service.restore_backup_with_code(restore_record)
+                print(f"Backup {restore_record[1]} Restored, code {restore_record[0]} No longer usable")
+
             flush_input()
             click_to_return()
 
         elif choice == "View Backups":
             clear()
-            backups = system_admin_service.view_backups()
+            backups = system_admin_service.view_all_backups()
             if backups:
                 print("Available Backups:")
                 for backup in backups:

@@ -1,5 +1,8 @@
 import re
 import datetime
+import sqlite3
+import hashlib
+from ui.menu_utils import *
 
 USERNAME_REGEX = re.compile(r"^[a-z_][a-z0-9_'.]{7,9}$", re.IGNORECASE)
 
@@ -92,3 +95,28 @@ def is_valid_date_iso_8601(date: str) -> bool:
         return True
     except ValueError:
         return False
+
+def validate_restore_code(code_username):
+    db_path="src/data/urban_mobility.db"
+    flush_input()
+    code = input("Enter your 12-character restore code: ").strip()
+
+    if not re.fullmatch(r'[A-Z0-9]{12}', code):
+        print("Invalid format. Code must be 12 characters, using only uppercase letters and numbers.")
+        return None
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cursor.execute("SELECT id FROM users WHERE username_hash = ?", (hashlib.sha256(code_username.encode()).hexdigest(),))
+    belong_id = cursor.fetchone()[0]
+    cursor.execute("SELECT * FROM restore_codes WHERE code = ? AND system_admin_id = ?", (code, belong_id))
+    result = cursor.fetchone()
+    conn.close()
+
+    if result:
+        print("Restore code is valid and exists. restoring backup...")
+        return result
+    else:
+        print("Restore code not found.")
+        return None

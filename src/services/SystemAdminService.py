@@ -18,9 +18,16 @@ from services.validation import (
     is_valid_house_number, is_valid_zip, is_valid_city, is_valid_email_and_domain,
     is_valid_mobile, is_valid_license
 )
+import zipfile
+import shutil
+
+from cryptography.fernet import Fernet
+import hashlib
+from datetime import date, datetime
 
 DB_FILE = "src/data/urban_mobility.db"
 BACKUP_DIR = "system_backups"
+TEMP_EXTRACT_PATH = "temp_restore" 
 
 
 class SystemAdminService(ServiceEngineerService):
@@ -189,8 +196,38 @@ class SystemAdminService(ServiceEngineerService):
         except Exception as e:
             return (False, f"Backup failed: {e}")
 
-    def restore_backup_with_code(self) -> bool:
-        print("Restore backup functionality is not implemented yet.")
+    def restore_backup_with_code(self, code) -> bool:
+        if not self.session.is_valid() or self.session.role not in ["super_admin"]:
+            return "Fail, Session expired" if not self.session.is_valid() else "Must be super admin to perform this action."
+        
+        backup_path = os.path.join(BACKUP_DIR, code[1])
+
+        if not os.path.exists(backup_path):
+            return False, f"Backup file '{code[1]}' not found."
+
+        try:
+            os.makedirs(TEMP_EXTRACT_PATH, exist_ok=True)
+
+            with zipfile.ZipFile(backup_path, 'r') as zip_ref:
+                zip_ref.extractall(TEMP_EXTRACT_PATH)
+
+            db_files = [f for f in os.listdir(TEMP_EXTRACT_PATH) if f.endswith('.db')]
+            if not db_files:
+                return False, "No database file found in the backup ZIP."
+
+            extracted_db_path = os.path.join(TEMP_EXTRACT_PATH, db_files[0])
+
+            shutil.copy2(extracted_db_path, DB_FILE)
+
+            return True, "Backup successfully restored."
+
+        except Exception as e:
+            return False, f"Error restoring backup: {str(e)}"
+
+        finally:
+            # Clean up van tijdelijke folder
+            shutil.rmtree(TEMP_EXTRACT_PATH, ignore_errors=True)
+
     
     def traveller_overview(self) -> list[dict]:
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
@@ -465,9 +502,6 @@ class SystemAdminService(ServiceEngineerService):
         except Exception as e:
             print(f"[ERROR] Failed to update traveller: {e}")
 
-
-
-
     def delete_traveller(self) -> None:
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
             print("Unauthorized or session expired.")
@@ -510,8 +544,6 @@ class SystemAdminService(ServiceEngineerService):
         except Exception as e:
             print(f"[ERROR] Failed to delete traveller: {e}")
 
-
-    
     def view_travellers_by_id(self, traveller_id):
         if not self.session.is_valid():
             print("Session Expired")
@@ -629,8 +661,10 @@ class SystemAdminService(ServiceEngineerService):
         cursor = conn.cursor()
 
         if sys:
+            cursor.execute("SELECT id FROM users WHERE username_hash = ?", (hashlib.sha256(self.session.user.encode()).hexdigest(),))
+            ad_id = cursor.fetchone()[0]
             cursor.execute("""SELECT code, backup_filename, system_admin_id, used, created_at
-                        FROM restore_codes WHERE admin_id = ?""", (self.session.user.id,))
+                        FROM restore_codes WHERE system_admin_id = ?""", (ad_id,))
         else:
             cursor.execute("SELECT code, backup_filename, system_admin_id, used, created_at FROM restore_codes")
         records = cursor.fetchall()
@@ -638,7 +672,7 @@ class SystemAdminService(ServiceEngineerService):
 
         if not records:
             print("No restore codes found.")
-            return
+            return False
 
         if sys:
             print("\n--- Your personal restore codes ---")
@@ -652,6 +686,7 @@ class SystemAdminService(ServiceEngineerService):
             print(f"  Used:        {used}")
             print(f"  Date Created:{date_created}")
             print("-----------------------------\n")
+        return True
 
     def delete_account(self) -> None:
         if not self.session.is_valid():
@@ -699,3 +734,17 @@ class SystemAdminService(ServiceEngineerService):
 
         except Exception as e:
             print(f"[ERROR] Failed to delete account: {e}")
+
+    def view_all_backups(self):
+        if not self.session.is_valid() or self.session.role not in ["super_admin"]:
+            return "Fail, Session expired" if not self.session.is_valid() else "Must be super admin to perform this action."
+
+        if not os.path.exists(BACKUP_DIR):
+            return []
+
+        backups = [
+            filename for filename in os.listdir(BACKUP_DIR)
+            if filename.endswith(".zip") and os.path.isfile(os.path.join(BACKUP_DIR, filename))
+        ]
+
+        return sorted(backups)
