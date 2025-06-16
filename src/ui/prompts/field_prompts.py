@@ -76,3 +76,97 @@ def prompt_last_name(Prompt = "Enter a Last name: "):
         if is_valid_name(last_name):
             return last_name
         print("Invalid format, only letters or ('.-) allowed, max 30")
+
+def prompt_brand(Prompt = "Enter a Brand: "):
+    while True:
+        brand = input(Prompt).strip()
+        if is_valid_name(brand):
+            return brand
+        print("Invalid Brand name")
+
+def prompt_model(Prompt = "Enter a Model: "):
+    while True:
+        model = input(Prompt).strip()
+        if is_valid_name(model):
+            return model
+        print("Invalid Model name")
+
+def prompt_serial_number(Prompt = "Enter a Serial Number: "):
+    while True:
+        serial_number = input(Prompt).strip()
+        if is_valid_serial_number(serial_number):
+            return serial_number
+        print("Invalid Serial Number")
+
+def prompt_top_speed(Prompt = "Enter a Top Speed: "):
+    while True:
+        top_speed = input(Prompt).strip()
+        if is_valid_number(top_speed):
+            return top_speed
+        print("Invalid Top Speed")
+
+def prompt_capacity(Prompt = "Enter a Capacity: "):
+    while True:
+        capacity = input(Prompt).strip()
+        if is_valid_number(capacity):
+            return capacity
+        print("Invalid Capacity")
+
+def prompt_soc(Prompt = "Enter a State of Charge: "):
+    while True:
+        soc = input(Prompt).strip()
+        if is_valid_number(soc):
+            return soc
+        print("Invalid State of Charge")
+
+def prompt_target_range_soc(Prompt = "Enter a Target Range State of Charge: "):
+    while True:
+        target_range_soc = input(Prompt).strip()
+        if is_valid_number(target_range_soc):
+            return target_range_soc
+        print("Invalid Target Range State of Charge")
+
+def prompt_location(Prompt="Enter location coordinates (longitude, latitude) in range of 51.85000, 4.40000 to 51.98000, 4.60000: "):
+    # Range of coordinates for Rotterdam
+    min_lon, max_lon = 51.85000, 51.98000
+    min_lat, max_lat = 4.40000, 4.60000
+
+    while True:
+        try:
+            coords = input(Prompt).strip().split(',')
+            if len(coords) != 2:
+                print("Please enter coordinates in the format: longitude, latitude")
+                continue
+            lon = float(coords[0].strip())
+            lat = float(coords[1].strip())
+            # Round to 5 decimals
+            lon = round(lon, 5)
+            lat = round(lat, 5)
+            if min_lon <= lon <= max_lon and min_lat <= lat <= max_lat:
+                return f"{lon:.5f}, {lat:.5f}"
+            else:
+                print(f"Coordinates out of range. Longitude must be between {min_lon:.5f} and {max_lon:.5f}, latitude between {min_lat:.5f} and {max_lat:.5f}.")
+        except ValueError:
+            print("Invalid input. Please enter numeric values for longitude and latitude.")
+
+def prompt_out_of_service(Prompt="Choose a State of Service (In Service/Out of Service): "):
+    state_of_service = {"in service": 0, "out of service": 1}
+    while True:
+        choice = input(Prompt).strip().lower()
+        if choice in state_of_service:
+            return state_of_service[choice]
+        print("Invalid input. Please enter 'In Service' or 'Out of Service'.")
+
+def prompt_mileage(Prompt = "Choose a Mileage: "):
+    while True:
+        mileage = input(Prompt).strip()
+        if is_valid_number(mileage):
+            return mileage
+        print("Invalid Mileage")
+
+def prompt_last_maintenance(Prompt = "Choose Last Maintance date (yyyy-mm-dd): "):
+    while True:
+        last_maintenance = input(Prompt).strip()
+        if is_valid_date_iso_8601(last_maintenance):
+            return last_maintenance
+        print("Invalid Last Maintance Date")
