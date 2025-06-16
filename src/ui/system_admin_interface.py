@@ -144,9 +144,12 @@ def backup_menu(system_admin_service):
             clear()
             backups = system_admin_service.view_all_backups()
             if backups:
-                print("Available Backups:")
-                for backup in backups:
-                    print(backup)
+                if "Fail" in backups:
+                    print(backups)
+                else:
+                    print("Available Backups:")
+                    for backup in backups:
+                        print(backup)
             else:
                 print("No backups available.")
             flush_input()

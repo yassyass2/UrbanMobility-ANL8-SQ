@@ -737,7 +737,7 @@ class SystemAdminService(ServiceEngineerService):
 
     def view_all_backups(self):
         if not self.session.is_valid() or self.session.role not in ["super_admin"]:
-            return "Fail, Session expired" if not self.session.is_valid() else "Must be super admin to perform this action."
+            return "Fail, Session expired" if not self.session.is_valid() else "Fail, Must be super admin to perform this action."
 
         if not os.path.exists(BACKUP_DIR):
             return []
