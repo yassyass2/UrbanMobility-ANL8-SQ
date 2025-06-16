@@ -129,30 +129,36 @@ def backup_menu(super_admin_service):
         
         if choice == "Create Backup":
             clear()
-            if super_admin_service.create_backup():
-                print("Backup created successfully.")
-            else:
-                print("Failed to create backup.")
+            print(super_admin_service.create_backup()[1])
             flush_input()
             click_to_return()
 
         elif choice == "Restore Backup":
             clear()
-            backup_id = input("Enter the ID of the backup to restore: ").strip()
-            if super_admin_service.restore_backup(backup_id):
-                print("Backup restored successfully.")
+            backups = super_admin_service.view_all_backups()
+            if backups:
+                print("Available Backups:")
+                for i, backup in enumerate(backups):
+                    print(f"Backup {i+1}. {backup}")
             else:
-                print("Failed to restore backup.")
+                print("No backups available.")
+            flush_input()
+
+            backup_id = get_valid_user_id(Prompt=f"Enter the Backup ID to restore (maximum of {len(backups)}): ")
+            while backup_id > len(backups):
+                backup_id = get_valid_user_id(Prompt=f"Enter the Backup ID to restore (maximum of {len(backups)-1}): ")
+
+            print(super_admin_service.restore_backup_without_code(backups[backup_id-1])[1])
             flush_input()
             click_to_return()
 
         elif choice == "View Backups":
             clear()
-            backups = super_admin_service.view_backups()
+            backups = super_admin_service.view_all_backups()
             if backups:
                 print("Available Backups:")
-                for backup in backups:
-                    print(backup)
+                for i, backup in enumerate(backups):
+                    print(f"Backup {i}. {backup}")
             else:
                 print("No backups available.")
             flush_input()
@@ -218,12 +224,12 @@ def traveller_operations_menu(super_admin_service):
                     click_to_return()
 
                 elif choice == "Back":
-                        clear();
+                        clear()
                         flush_input()
                         return
 
         elif choice == "Back":
-            clear();
+            clear()
             flush_input()
             return
 
@@ -259,11 +265,11 @@ def scooter_operations_menu(super_admin_service):
                     click_to_return()
 
                 elif choice == "Back":
-                    clear();
+                    clear()
                     flush_input()
                     return
                 
         elif choice == "Back":
-            clear();
+            clear()
             flush_input()
             return

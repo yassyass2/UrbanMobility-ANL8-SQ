@@ -66,18 +66,18 @@ def is_valid_number_selection(numbers: str) -> list:
         return None
     
 
-def get_valid_user_id():
+def get_valid_user_id(Prompt="\nEnter the ID of the user: "):
     while True:
-        user_input = input("\nEnter the ID of the user: ").strip()
+        user_input = input(Prompt).strip()
 
         if not user_input.isdigit():
-            print("Invalid input. Please enter a numeric user ID.")
+            print("Invalid input. Please enter a numeric ID.")
             continue
 
         user_id = int(user_input)
 
         if user_id <= 0:
-            print("User ID must be greater than 0.")
+            print("ID must be greater than 0.")
             continue
 
         return user_id
