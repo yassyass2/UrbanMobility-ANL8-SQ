@@ -112,19 +112,19 @@ def prompt_capacity(Prompt = "Enter a Capacity: "):
             return capacity
         print("Invalid Capacity")
 
-def prompt_soc(Prompt = "Enter a State of Capacity: "):
+def prompt_soc(Prompt = "Enter a State of Charge: "):
     while True:
         soc = input(Prompt).strip()
         if is_valid_number(soc):
             return soc
-        print("Invalid State of Capacity")
+        print("Invalid State of Charge")
 
-def prompt_target_range_soc(Prompt = "Enter a Target Range State of Capacity: "):
+def prompt_target_range_soc(Prompt = "Enter a Target Range State of Charge: "):
     while True:
         target_range_soc = input(Prompt).strip()
         if is_valid_number(target_range_soc):
             return target_range_soc
-        print("Invalid Target Range State of Capacity")
+        print("Invalid Target Range State of Charge")
 
 def prompt_location(Prompt = "Enter a Location: "):
     cities = [

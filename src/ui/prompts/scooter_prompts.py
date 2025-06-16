@@ -1,6 +1,37 @@
 from ui.menu_utils import clear, flush_input
 from ui.prompts.field_prompts import *
 
+
+def prompt_new_scooter():
+    clear()
+    print("=== ADD NEW SCOOTER ===\n")
+
+    brand = prompt_brand()
+    model = prompt_model()
+    serial_number = prompt_serial_number()
+    top_speed = prompt_top_speed()
+    battery_capacity = prompt_capacity()
+    soc = prompt_soc()
+    target_range_soc = prompt_target_range_soc()
+    location = prompt_location()
+    out_of_service = prompt_out_of_service()
+    mileage = prompt_mileage()
+    last_maintenance = prompt_last_maintenance()
+
+    return {
+        "brand": brand,
+        "model": model,
+        "serial_number": serial_number,
+        "top_speed": top_speed,
+        "battery_capacity": battery_capacity,
+        "soc": soc,
+        "target_range_soc": target_range_soc,
+        "location": location,
+        "out_of_service": out_of_service,
+        "mileage": mileage,
+        "last_maintenance": last_maintenance
+    }
+
 def prompt_update_scooter(scooter_id: int, role: str):
     clear()
     print(f"=== UPDATE SCOOTER {scooter_id} ===\n")

@@ -3,6 +3,7 @@ from services.SuperAdminService import SuperAdminService
 from models.Session import Session
 from ui.menu_utils import navigate_menu, flush_input, clear, click_to_return
 from ui.prompts.user_prompts import *
+from ui.prompts.scooter_prompts import *
 
 
 def super_admin_interface(session: Session):
@@ -270,12 +271,31 @@ def scooter_operations_menu(super_admin_service):
         choice = navigate_menu(menu_options)
 
         if choice == "Add Scooter":
-            super_admin_service.add_scooter()
+            clear()
+            flush_input()
+            scooter_data = prompt_new_scooter()
+            if super_admin_service.add_scooter(scooter_data):
+                print(f"Scooter added successfully: {scooter_data}")
+            else:
+                print("Failed to add scooter.")
+            click_to_return()
+
         elif choice == "Update Scooter":
+            clear()
+            flush_input()
+            scooter_id = input("Enter a scooter id to update: ")
+            fields_to_update = prompt_update_scooter(scooter_id, super_admin_service.session.role)
             super_admin_service.update_scooter(scooter_id, fields_to_update)
             click_to_return()
+
         elif choice == "Delete Scooter":
-            super_admin_service.delete_scooter()
+            clear()
+            flush_input()
+            id_to_delete = input("Enter the ID of the scooter to delete: ").strip()
+            del_result = super_admin_service.delete_scooter(id_to_delete)
+            print(del_result)
+            click_to_return()
+
         elif choice == "Search Scooter":
             while True:
                 menu_options = ["Search By ID", "Search By Name", "Back"]
