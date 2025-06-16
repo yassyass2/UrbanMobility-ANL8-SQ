@@ -1,4 +1,5 @@
 import re
+import datetime
 
 USERNAME_REGEX = re.compile(r"^[a-z_][a-z0-9_'.]{7,9}$", re.IGNORECASE)
 
@@ -46,7 +47,6 @@ def is_valid_city(city: str, cities: list) -> bool:
     return city in cities
 
 def is_valid_date(value: str) -> bool:
-    import datetime
     try:
         datetime.datetime.strptime(value, "%d-%m-%Y")
         return True
@@ -54,7 +54,6 @@ def is_valid_date(value: str) -> bool:
         return False
     
 def is_valid_birthday(value: str) -> bool:
-    import datetime
     try:
         birth_date = datetime.datetime.strptime(value, "%Y-%m-%d").date()
         today = datetime.date.today()
@@ -65,7 +64,6 @@ def is_valid_birthday(value: str) -> bool:
 
 
 def is_valid_email_and_domain(email: str) -> bool:
-    import re
     # Basic email validation
     email_regex = re.compile(r"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$")
     if not email_regex.match(email):
@@ -76,3 +74,21 @@ def is_valid_email_and_domain(email: str) -> bool:
     valid_domains = ["gmail.com", "hotmail.com", "outlook.com", "yahoo.com"]
     
     return domain in valid_domains
+
+def is_valid_serial_number(serial_number):
+    return serial_number.isalnum() and 10 <= len(serial_number) <= 17
+
+
+def is_valid_number(number):
+    try:
+        num = float(number)
+        return num == num and num != float("inf") and num != float("-inf")
+    except (ValueError, TypeError):
+        return False
+    
+def is_valid_date_iso_8601(date: str) -> bool:
+    try:
+        datetime.datetime.strptime(date, "%Y-%m-%d")
+        return True
+    except ValueError:
+        return False
