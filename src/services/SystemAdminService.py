@@ -12,7 +12,6 @@ from services import auth
 from cryptography.fernet import Fernet
 import hashlib
 from datetime import date, datetime
-from ui.login_interface import start_interface
 from ui.menu_utils import clear
 from services.validation import (
     is_valid_name, is_valid_birthday, is_valid_gender, is_valid_street,
@@ -693,6 +692,7 @@ class SystemAdminService(ServiceEngineerService):
                 print("\nSession terminated. Returning to login menu...")
                 
                 time.sleep(2)
+                from ui.login_interface import start_interface
                 clear()
                 start_interface()
                 sys.exit()
