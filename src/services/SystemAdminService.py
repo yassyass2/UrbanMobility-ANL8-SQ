@@ -1,21 +1,23 @@
 import bcrypt
+import sys
 import os
 import sqlite3
+import time
+import string, random
+import zipfile
 from models.Session import Session
 from models.User import User
 from services.ServiceEngineerService import ServiceEngineerService
 from services import auth
-import string, random
+from cryptography.fernet import Fernet
+import hashlib
+from datetime import date, datetime
+from ui.menu_utils import clear
 from services.validation import (
     is_valid_name, is_valid_birthday, is_valid_gender, is_valid_street,
     is_valid_house_number, is_valid_zip, is_valid_city, is_valid_email_and_domain,
     is_valid_mobile, is_valid_license
 )
-import zipfile
-
-from cryptography.fernet import Fernet
-import hashlib
-from datetime import date, datetime
 
 DB_FILE = "src/data/urban_mobility.db"
 BACKUP_DIR = "system_backups"
@@ -650,3 +652,50 @@ class SystemAdminService(ServiceEngineerService):
             print(f"  Used:        {used}")
             print(f"  Date Created:{date_created}")
             print("-----------------------------\n")
+
+    def delete_account(self) -> None:
+        if not self.session.is_valid():
+            print("Session expired.")
+            return
+
+        try:
+            confirm = input("Are you sure you want to delete your account? (yes/no): ").strip().lower()
+            if confirm != "yes":
+                print("Account deletion cancelled.")
+                return
+
+            final_confirm = input("Type 'CONFIRM' in all caps to permanently delete your account: ").strip()
+            if final_confirm != "CONFIRM":
+                print("Final confirmation failed. Account not deleted.")
+                return
+
+            username = self.session.user
+            username_hash = hashlib.sha256(username.encode()).hexdigest()
+
+            with sqlite3.connect(DB_FILE) as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT id, username FROM users WHERE username_hash = ?", (username_hash,))
+                result = cursor.fetchone()
+
+                if not result:
+                    print("User not found.")
+                    return
+
+                user_id, encrypted_username = result
+                cursor.execute("DELETE FROM users WHERE id = ?", (user_id,))
+                conn.commit()
+
+                cipher = Fernet(os.getenv("FERNET_KEY").encode())
+                decrypted_username = cipher.decrypt(encrypted_username.encode()).decode()
+                print(f"Deleted account for user: {decrypted_username}")
+                
+                print("\nSession terminated. Returning to login menu...")
+                
+                time.sleep(2)
+                from ui.login_interface import start_interface
+                clear()
+                start_interface()
+                sys.exit()
+
+        except Exception as e:
+            print(f"[ERROR] Failed to delete account: {e}")

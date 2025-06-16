@@ -30,46 +30,27 @@ def system_admin_interface(session: Session):
         elif choice == "Scooter Operations":
             scooter_operations_menu(system_admin_service)
         else:
+            flush_input()
             sys.exit()
 
 def account_settings_menu(system_admin_service):
-    menu_options = ["Change Password", "Delete Account", "Update Password", "Back"]
+    menu_options = ["Update Password", "Delete Account", "Back"]
     
     while True:
         choice = navigate_menu(menu_options)
         
-        if choice == "Change Password":
+        if choice == "Update Password":
             clear()
-            new_password = input("Enter new password: ").strip()
-            if system_admin_service.change_password(new_password):
-                print("Password changed successfully.")
-            else:
-                print("Failed to change password.")
+            flush_input()
+            system_admin_service.update_password()
             flush_input()
             click_to_return()
 
         elif choice == "Delete Account":
             clear()
-            confirmation = input("Are you sure you want to delete your account? (yes/no): ").strip().lower()
-            if confirmation == "yes":
-                if system_admin_service.delete_account():
-                    print("Account deleted successfully.")
-                    sys.exit()
-                else:
-                    print("Failed to delete account.")
-            else:
-                print("Account deletion cancelled.")
             flush_input()
-            click_to_return()
-        
-        elif choice == "Update Password":
-            clear()
+            system_admin_service.delete_account()
             flush_input()
-            new_password = system_admin_service.update_password()
-            if new_password:
-                print(f"Password updated successfully to: {new_password}")
-            else:
-                print("Failed to update password.")
             click_to_return()
 
         elif choice == "Back":

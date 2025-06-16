@@ -1,5 +1,5 @@
 import sys
-import services.ServiceEngineerService as ServiceEngineerService
+from services.ServiceEngineerService import ServiceEngineerService
 from models.Session import Session
 from ui.menu_utils import navigate_menu, flush_input, clear, click_to_return
 from ui.prompts.scooter_prompts import *
@@ -15,11 +15,7 @@ def service_engineer_interface(session: Session):
         if choice == "Update Password":
             clear()
             flush_input()
-            new_password = service_engineer_service.update_password()
-            if new_password:
-                print(f"Password updated successfully to: {new_password}")
-            else:
-                print("Failed to update password.")
+            service_engineer_service.update_password()
             click_to_return()
 
         elif choice == "Update Scooters":
@@ -56,5 +52,6 @@ def service_engineer_interface(session: Session):
                     return
 
         elif choice == "Exit":
+            flush_input()
             sys.exit()
 
