@@ -14,11 +14,7 @@ def service_engineer_interface(session: Session):
         if choice == "Update Password":
             clear()
             flush_input()
-            new_password = service_engineer_service.update_password()
-            if new_password:
-                print(f"Password updated successfully to: {new_password}")
-            else:
-                print("Failed to update password.")
+            service_engineer_service.update_password()
             click_to_return()
 
 
