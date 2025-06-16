@@ -515,7 +515,8 @@ class SystemAdminService(ServiceEngineerService):
             print("Session Expired")
             return
 
-        conn = sqlite3.connect('src/data/urban_mobility.db')
+        cipher = Fernet(os.getenv("FERNET_KEY").encode())
+        conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
 
         try:
@@ -523,8 +524,22 @@ class SystemAdminService(ServiceEngineerService):
             travellers = cursor.fetchall()
             if travellers:
                 print("Travellers found:")
-                for traveller in travellers:
-                    print(traveller)
+                fields = [
+                    "id", "first_name", "last_name", "birthday", "gender",
+                    "street", "house_number", "zip_code", "city", "email",
+                    "mobile", "license_number", "registration_date"
+                ]
+                for row in travellers:
+                    traveller = dict(zip(fields, row))
+
+                    # Decrypt sensitive fields
+                    for key in ["street", "zip_code", "city", "email", "mobile", "license_number"]:
+                        if traveller[key]:
+                            traveller[key] = cipher.decrypt(traveller[key].encode()).decode()
+
+                    for key, value in traveller.items():
+                        print(f"{key.replace('_', ' ').title()}: {value}")
+                    print("-" * 40)
             else:
                 print(f"No travellers found containing ID: {traveller_id}")
         except sqlite3.Error as e:
@@ -532,12 +547,14 @@ class SystemAdminService(ServiceEngineerService):
         finally:
             conn.close()
 
+
     def view_travellers_by_last_name(self, traveller_last_name):
         if not self.session.is_valid():
             print("Session Expired")
             return
 
-        conn = sqlite3.connect('src/data/urban_mobility.db')
+        cipher = Fernet(os.getenv("FERNET_KEY").encode())
+        conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
 
         try:
@@ -545,8 +562,22 @@ class SystemAdminService(ServiceEngineerService):
             travellers = cursor.fetchall()
             if travellers:
                 print("Travellers found:")
-                for traveller in travellers:
-                    print(traveller)
+                for row in travellers:
+                    fields = [
+                        "id", "first_name", "last_name", "birthday", "gender",
+                        "street", "house_number", "zip_code", "city", "email",
+                        "mobile", "license_number", "registration_date"
+                    ]
+                    traveller = dict(zip(fields, row))
+
+                    # Decrypt sensitive fields
+                    for key in ["street", "zip_code", "city", "email", "mobile", "license_number"]:
+                        if traveller[key]:
+                            traveller[key] = cipher.decrypt(traveller[key].encode()).decode()
+
+                    for key, value in traveller.items():
+                        print(f"{key.replace('_', ' ').title()}: {value}")
+                    print("-" * 40)
             else:
                 print(f"No travellers found containing Last Name: {traveller_last_name}")
         except sqlite3.Error as e:
