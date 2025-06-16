@@ -2,9 +2,10 @@ import sys
 from services.SystemAdminService import SystemAdminService
 from models.Session import Session
 from ui.menu_utils import navigate_menu, flush_input, clear, click_to_return
-from ui.super_admin_interface import user_menu
 from services.validation import *
 from ui.prompts.scooter_prompts import prompt_new_scooter, prompt_update_scooter
+from ui.menu_utils import navigate_menu, flush_input, clear, click_to_return
+from ui.prompts.user_prompts import *
 
 
 def system_admin_interface(session: Session):
@@ -26,6 +27,69 @@ def system_admin_interface(session: Session):
         else:
             flush_input()
             sys.exit()
+
+def user_menu(user_service):
+    menu_options = ["User List", "Add User", "Modify User", "Delete User", "Reset User Password", "Back"]
+
+    while True:
+        choice = navigate_menu(menu_options)
+
+        if choice == "User List":
+            clear()
+            users = user_service.user_overview()
+            if users:
+                print("====== USER LIST ======")
+                for user in users:
+                    print(repr(user))
+            else:
+                print("Access denied, login again as atleast a system admin!")
+
+            flush_input()
+            click_to_return()
+
+        elif choice == "Add User":
+            required_fields = prompt_new_user(["service_engineer"])
+            success = user_service.add_user(["service_engineer"], required_fields)
+            flush_input()
+
+            if success:
+                print(f"User {required_fields['username']} added, role: {required_fields['role']}")
+                click_to_return()
+            else:
+                print("Access denied, login again as atleast a system admin!")
+
+        elif choice == "Delete User":
+                id_to_delete = user_selection_screen(user_service, "DELETE")
+                del_result = user_service.delete_user(["service_engineer"], id_to_delete)
+                print(del_result)
+                click_to_return()
+
+        elif choice == "Modify User":
+            id_to_update = user_selection_screen(user_service, "MODIFY")
+            fields_to_update = prompt_update_user(id_to_update, ["service_engineer"])
+            print(user_service.update_user(id_to_update, fields_to_update))
+            click_to_return()
+
+        elif choice == "Reset User Password":
+            id_to_reset = user_selection_screen(user_service, "RESET PASSWORD OF")
+            temp_pass = prompt_password(Prompt=f"Enter a temporary password for User {id_to_reset}: ")
+            user_service.reset_password(id_to_reset, ["service_engineer"], temp_pass)
+            click_to_return()
+
+        elif choice == "Back":
+            return
+        
+def user_selection_screen(user_service, action: str) -> int:
+    clear()
+    flush_input()
+    users = user_service.user_overview()
+    if users:
+        print(f"====== {action} A USER ======")
+        for user in users:
+            if user.role == "service_engineer":
+                print(repr(user))
+
+    return get_valid_user_id()
 
 def account_settings_menu(system_admin_service):
     menu_options = ["Update Password", "Delete Account", "Back"]
