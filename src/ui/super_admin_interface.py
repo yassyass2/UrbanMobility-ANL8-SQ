@@ -93,13 +93,13 @@ def show_system_admins(user_service) -> int:
     clear()
     flush_input()
     users = user_service.user_overview()
+    system_admins = [user for user in users if user.role == "system_admin"]
     if users:
         print(f"====== SYSTEM ADMINS TO RECEIVE RESTORE CODE ======")
-        for user in users:
-            if user.role == "system_admin":
-                print(repr(user))
+        for ad in system_admins:
+            print(repr(ad))
 
-    return get_valid_user_id(Prompt=f"Enter the admin ID to make a restore code for: ")
+    return get_valid_admin_id(system_admins, Prompt=f"Enter the admin ID to make a restore code for: ")
 
 def account_settings_menu(super_admin_service):
     menu_options = ["Change Password", "Delete Account","Back"]
@@ -135,7 +135,7 @@ def account_settings_menu(super_admin_service):
             return
 
 def backup_menu(super_admin_service):
-    menu_options = ["Create Backup", "Restore Backup", "View Backups", "Generate Restore Code", "Back"]
+    menu_options = ["Create Backup", "Restore Backup", "View Backups", "Generate Restore Code", "Show Restore Codes", "Back"]
     
     while True:
         choice = navigate_menu(menu_options)
@@ -194,6 +194,12 @@ def backup_menu(super_admin_service):
 
             click_to_return()
             flush_input()
+
+        elif choice == "Show Restore Codes":
+            clear()
+            super_admin_service.view_restore_codes(False)
+            flush_input()
+            click_to_return()
 
         elif choice == "Back":
             return

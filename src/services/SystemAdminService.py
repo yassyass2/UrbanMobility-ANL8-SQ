@@ -621,3 +621,32 @@ class SystemAdminService(ServiceEngineerService):
             cursor.execute("DELETE FROM scooters WHERE id = ?", (scooter_id,))
             conn.commit()
             return f"Scooter with ID {scooter_id} deleted successfully." if cursor.rowcount > 0 else f"No scooter found with ID {scooter_id}."
+        
+    def view_restore_codes(self, sys=True):
+        conn = sqlite3.connect(DB_FILE)
+        cursor = conn.cursor()
+
+        if sys:
+            cursor.execute("""SELECT code, backup_filename, system_admin_id, used, created_at
+                        FROM restore_codes WHERE admin_id = ?""", (self.session.user.id,))
+        else:
+            cursor.execute("SELECT code, backup_filename, system_admin_id, used, created_at FROM restore_codes")
+        records = cursor.fetchall()
+        conn.close()
+
+        if not records:
+            print("No restore codes found.")
+            return
+
+        if sys:
+            print("\n--- Your personal restore codes ---")
+        else:
+            print("\n--- ALL RESTORE CODES ---\n")
+        for row in records:
+            code, backup_filename, admin_id, used, date_created = row
+            print(f"Code: {code}")
+            print(f"  Backup File: {backup_filename}")
+            print(f"  Super admin ID:    {admin_id}")
+            print(f"  Used:        {used}")
+            print(f"  Date Created:{date_created}")
+            print("-----------------------------\n")

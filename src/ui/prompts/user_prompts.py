@@ -81,3 +81,24 @@ def get_valid_user_id(Prompt="\nEnter the ID of the user: "):
             continue
 
         return user_id
+    
+
+def get_valid_admin_id(admins, Prompt="\nEnter the ID of the admin: "):
+    while True:
+        user_input = input(Prompt).strip()
+
+        if not user_input.isdigit():
+            print("Invalid input. Please enter a numeric ID.")
+            continue
+
+        user_id = int(user_input)
+
+        if user_id <= 0:
+            print("ID must be greater than 0.")
+            continue
+        
+        if not any(admin.id == user_id for admin in admins):
+            print(f"There is no admin with ID {user_id}")
+            continue
+
+        return user_id
