@@ -126,17 +126,28 @@ def prompt_target_range_soc(Prompt = "Enter a Target Range State of Charge: "):
             return target_range_soc
         print("Invalid Target Range State of Charge")
 
-def prompt_location(Prompt = "Enter a Location: "):
-    cities = [
-        "Rotterdam", "Delft", "Schiedam", "The Hague", "Leiden",
-        "Gouda", "Zoetermeer", "Spijkenisse", "Vlaardingen", "Barendrecht"
-    ]
+def prompt_location(Prompt="Enter location coordinates (longitude, latitude) in range of 51.85000, 4.40000 to 51.98000, 4.60000: "):
+    # Range of coordinates for Rotterdam
+    min_lon, max_lon = 51.85000, 51.98000
+    min_lat, max_lat = 4.40000, 4.60000
+
     while True:
-        print("Choose one of the following cities: " + ", ".join(cities))
-        location = input(Prompt).strip()
-        if location in cities:
-            return location
-        print("Invalid location. Please choose from the listed cities.")
+        try:
+            coords = input(Prompt).strip().split(',')
+            if len(coords) != 2:
+                print("Please enter coordinates in the format: longitude, latitude")
+                continue
+            lon = float(coords[0].strip())
+            lat = float(coords[1].strip())
+            # Round to 5 decimals
+            lon = round(lon, 5)
+            lat = round(lat, 5)
+            if min_lon <= lon <= max_lon and min_lat <= lat <= max_lat:
+                return f"{lon:.5f}, {lat:.5f}"
+            else:
+                print(f"Coordinates out of range. Longitude must be between {min_lon:.5f} and {max_lon:.5f}, latitude between {min_lat:.5f} and {max_lat:.5f}.")
+        except ValueError:
+            print("Invalid input. Please enter numeric values for longitude and latitude.")
 
 def prompt_out_of_service(Prompt="Choose a State of Service (In Service/Out of Service): "):
     state_of_service = {"in service": 0, "out of service": 1}
