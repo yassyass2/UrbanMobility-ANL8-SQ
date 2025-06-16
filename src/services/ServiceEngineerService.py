@@ -69,6 +69,7 @@ class ServiceEngineerService():
         finally:
             conn.close()
 
+
     def update_scooter(self, scooter_id: int, to_update: dict):
         if not self.session.is_valid() or self.session.role not in ["service_engineer", "system_admin", "super_admin"]:
             return "Fail, Session expired" if not self.session.is_valid() else "Must be at least service engineer to perform this action."
@@ -94,3 +95,28 @@ class ServiceEngineerService():
             return f"Database error: {e}"
 
         
+
+    def change_password(self, new_password):
+        if not self.session.is_valid():
+            print("Session expired")
+            return
+        
+        if len(new_password) < 8 or len(new_password) > 10:
+            print("Password must be between 8 and 10 characters long.")
+            return
+        
+        hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
+
+        # Update the password in the database
+        conn = sqlite3.connect('src/data/urban_mobility.db')
+        cursor = conn.cursor()
+        try:
+            cursor.execute("UPDATE users SET password = ? WHERE username = ?", (hashed_password, self.session.username))
+            conn.commit()
+        except sqlite3.Error as e:
+            print(f"Database error: {e}")
+            return
+        finally:
+            conn.close()
+        
+        print(f"Password changed successfully for user {self.session.username}.")

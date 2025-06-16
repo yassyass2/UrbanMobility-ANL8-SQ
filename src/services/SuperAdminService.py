@@ -1,6 +1,10 @@
 from models.Session import Session
 from models.User import User
 from services.SystemAdminService import SystemAdminService
+import sqlite3
+import secrets
+import string
+from datetime import datetime
 
 import zipfile
 import os
@@ -58,5 +62,28 @@ class SuperAdminService(SystemAdminService):
             return False, f"Error restoring backup: {str(e)}"
 
         finally:
-            # Clean up tijdelijke folder
+            # Clean up van tijdelijke folder
             shutil.rmtree(TEMP_EXTRACT_PATH, ignore_errors=True)
+
+    def generate_restore_code(self, backup_file, admin_id):
+        if not self.session.is_valid() or self.session.role not in ["super_admin"]:
+            return "Fail, Session expired" if not self.session.is_valid() else "Must be super admin to perform this action."
+
+        characters = string.ascii_uppercase + string.digits
+        code = ''.join(secrets.choice(characters) for _ in range(12))
+
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+            INSERT INTO restore_codes (
+                code,
+                backup_filename,
+                system_admin_id,
+                used,
+                created_at
+            ) VALUES (?, ?, ?, ?, ?)
+            ''', (code, backup_file, admin_id,
+                  0, datetime.now().strftime('%Y-%m-%d')))
+            
+            conn.commit()
+        return f"Restore code for System Admin {admin_id} for {backup_file} succesfully created"
