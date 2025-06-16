@@ -58,5 +58,7 @@ class SuperAdminService(SystemAdminService):
             return False, f"Error restoring backup: {str(e)}"
 
         finally:
-            # Clean up tijdelijke folder
+            # Clean up van tijdelijke folder
             shutil.rmtree(TEMP_EXTRACT_PATH, ignore_errors=True)
+
+    def generate_restore_code()
