@@ -24,12 +24,6 @@ class ServiceEngineerService():
         print(f"Password updated for user {self.session.username}.")
         return
 
-    def update_scooter(self, scooter_id):
-        if (not self.session.is_valid()):
-            print("session expired")
-            return
-        print(f"Updated scooter {scooter_id}.")
-
     def search_scooter_by_id(self, scooter_id):
         if not self.session.is_valid():
             print("session expired")
@@ -75,6 +69,33 @@ class ServiceEngineerService():
         finally:
             conn.close()
 
+
+    def update_scooter(self, scooter_id: int, to_update: dict):
+        if not self.session.is_valid() or self.session.role not in ["service_engineer", "system_admin", "super_admin"]:
+            return "Fail, Session expired" if not self.session.is_valid() else "Must be at least service engineer to perform this action."
+        if not to_update:
+            return "No fields provided to update."
+
+        fields_query = ", ".join(f"{field} = ?" for field in to_update)
+        new_values = list(to_update.values())
+
+        try:
+            with sqlite3.connect('src/data/urban_mobility.db') as conn:
+                cursor = conn.cursor()
+                query = f"UPDATE scooters SET {fields_query} WHERE id = ?"
+                cursor.execute(query, new_values + [scooter_id])
+                conn.commit()
+
+                if cursor.rowcount == 0:
+                    return "No scooter found with the given ID."
+
+                return "Scooter updated successfully."
+
+        except sqlite3.Error as e:
+            return f"Database error: {e}"
+
+        
+
     def change_password(self, new_password):
         if not self.session.is_valid():
             print("Session expired")
@@ -99,4 +120,3 @@ class ServiceEngineerService():
             conn.close()
         
         print(f"Password changed successfully for user {self.session.username}.")
-

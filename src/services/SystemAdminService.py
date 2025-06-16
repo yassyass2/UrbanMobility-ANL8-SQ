@@ -584,3 +584,40 @@ class SystemAdminService(ServiceEngineerService):
             print(f"Database error: {e}")
         finally:
             conn.close()
+
+
+    def add_scooter(self, scooter_data: dict) -> bool:
+        if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            return False
+
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO scooters (
+                    brand, model, serial_number, top_speed, battery_capacity, soc, target_range_soc, location, out_of_service, mileage, last_maintenance
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                scooter_data["brand"],
+                scooter_data["model"],
+                scooter_data["serial_number"],
+                scooter_data["top_speed"],
+                scooter_data["battery_capacity"],
+                scooter_data["soc"],
+                scooter_data["target_range_soc"],
+                scooter_data["location"],
+                scooter_data["out_of_service"],
+                scooter_data["mileage"],
+                scooter_data["last_maintenance"]
+            ))
+            conn.commit()
+        return True
+
+    def delete_scooter(self, scooter_id: int) -> bool:
+        if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            return False
+
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM scooters WHERE id = ?", (scooter_id,))
+            conn.commit()
+            return f"Scooter with ID {scooter_id} deleted successfully." if cursor.rowcount > 0 else f"No scooter found with ID {scooter_id}."
