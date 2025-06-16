@@ -286,6 +286,7 @@ def scooter_operations_menu(super_admin_service):
             scooter_id = input("Enter a scooter id to update: ")
             fields_to_update = prompt_update_scooter(scooter_id, super_admin_service.session.role)
             super_admin_service.update_scooter(scooter_id, fields_to_update)
+
             click_to_return()
 
         elif choice == "Delete Scooter":
