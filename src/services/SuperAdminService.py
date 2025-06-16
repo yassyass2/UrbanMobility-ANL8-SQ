@@ -87,3 +87,17 @@ class SuperAdminService(SystemAdminService):
             
             conn.commit()
         return f"Restore code for System Admin {admin_id} for {backup_file} succesfully created"
+
+    def revoke_restore_code(self, code_to_delete):
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("DELETE FROM restore_codes WHERE code = ?", (code_to_delete,))
+            conn.commit()
+
+            rows_deleted = cursor.rowcount
+            conn.close()
+
+            if rows_deleted:
+                return f"Restore code '{code_to_delete}' deleted successfully."
+            else:
+                return f"No restore code found for '{code_to_delete}'."
