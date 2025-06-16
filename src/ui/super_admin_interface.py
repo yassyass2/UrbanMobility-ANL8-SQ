@@ -272,7 +272,6 @@ def scooter_operations_menu(super_admin_service):
         if choice == "Add Scooter":
             super_admin_service.add_scooter()
         elif choice == "Update Scooter":
-            super_admin_service.update_scooter(scooter_id, fields_to_update)
             click_to_return()
         elif choice == "Delete Scooter":
             super_admin_service.delete_scooter()
