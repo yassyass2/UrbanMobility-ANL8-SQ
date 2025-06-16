@@ -30,6 +30,7 @@ def system_admin_interface(session: Session):
         elif choice == "Scooter Operations":
             scooter_operations_menu(system_admin_service)
         else:
+            flush_input()
             sys.exit()
 
 def account_settings_menu(system_admin_service):

@@ -1,5 +1,5 @@
 import sys
-import services.ServiceEngineerService as ServiceEngineerService
+from services.ServiceEngineerService import ServiceEngineerService
 from models.Session import Session
 from ui.menu_utils import navigate_menu, flush_input, clear, click_to_return
 from ui.prompts.scooter_prompts import *
@@ -52,5 +52,6 @@ def service_engineer_interface(session: Session):
                     return
 
         elif choice == "Exit":
+            flush_input()
             sys.exit()
 
