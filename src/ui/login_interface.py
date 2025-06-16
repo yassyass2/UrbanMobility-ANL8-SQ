@@ -1,81 +1,87 @@
 import os
-import bcrypt
-from ..services.auth import authenticate_user, get_role
-from . import super_admin_interface
-from . import system_admin_interface
-from . import service_engineer_interface
+from services.auth import authenticate_user, get_role
+from services.SystemAdminService import SystemAdminService
+from ui.super_admin_interface import super_admin_interface
+from ui.system_admin_interface import system_admin_interface
+from ui.service_engineer_interface import service_engineer_interface
+from models.Session import Session
+from visual.text_colors import TextColors
+from ui.prompts.field_prompts import *
+from ui.menu_utils import *
+import sqlite3
+import hashlib
 
-clear = lambda: os.system('cls' if os.name == 'nt' else 'clear')
 
-def login_interface():
-    print(""".-------------------------------------------------------.
-|                                                       |
-|  __  __    _    ___ _   _   __  __ _____ _   _ _   _  |
-| |  \/  |  / \  |_ _| \ | | |  \/  | ____| \ | | | | | |
-| | |\/| | / _ \  | ||  \| | | |\/| |  _| |  \| | | | | |
-| | |  | |/ ___ \ | || |\  | | |  | | |___| |\  | |_| | |
-| |_|  |_/_/   \_\___|_| \_| |_|  |_|_____|_| \_|\___/  |
-|                                                       |
-'-------------------------------------------------------'""")
+t = TextColors
 
+def clear():
+    os.system('cls' if os.name == 'nt' else 'clear')
+
+def start_interface():
     while True:
-        print("Choose what you want to do:")
-        print("1. Log in")
-        print("2. Register")
-        print("3. Exit")
-        choice = input("Enter your choice (1/2/3): ").strip().lower()
-        if choice == '1' or choice == 'log in' or choice == 'login':
-            login()
-        elif choice == '2' or choice == 'register':
-            register()
-        elif choice == '3' or choice == 'exit':
-            exit()
-        else:
-            print("[ERROR] Invalid choice. Please try again.")
-        clear()
+        print("====== URBAN MOBILITY BACKEND SYSTEM ======")
+        print(f"\n{t.blue}Please log in to continue.{t.end}")
+        username = input("Username: ").strip().lower()
+        if len(username) < 8 or len(username) > 10 and username != 'super_admin':
+            clear()
+            print(f"{t.red}[ERROR] Username must be between 8 and 10 characters long.{t.end}")
+            continue
+        password_raw = input_password()
 
-def login():
-    while True:
-        print(""".------------------------------.
-|                              |
-|  _     ___   ____ ___ _   _  |
-| | |   / _ \ / ___|_ _| \ | | |
-| | |  | | | | |  _ | ||  \| | |
-| | |__| |_| | |_| || || |\  | |
-| |_____\___/ \____|___|_| \_| |
-|                              |
-'------------------------------'""")
-        username = input("Username: ").strip()
-        password = input("Password: ").strip()
-        super_admin_interface.super_admin_interface() # Ja dit is een tijdelijke command om super admin interface te testen
-        clear()
+        if password_raw is None:
+            print(f"{t.red}[INFO] Password input cancelled. Exiting.{t.end}")
+            continue
+        if not username:
+            print(f"{t.red}[ERROR] Username cannot be empty.{t.end}")
+            continue
+
+        password = password_raw.strip()
 
         if authenticate_user(username, password):
             role = get_role(username)
+            session = Session(username, role)
+            check_temporary_password(username, session)
 
             print(f"\n[INFO] Welcome, {username}! Role: {role}")
-
+            
             if role == "super_admin":
-                super_admin_interface.super_admin_interface()
+                super_admin_interface(session)
             elif role == "system_admin":
-                system_admin_interface.system_admin_interface(username)
+                system_admin_interface(session)
             elif role == "service_engineer":
-                service_engineer_interface.service_engineer_interface(username)
+                service_engineer_interface(session)
             else:
-                print("[ERROR] Unknown role. Access denied.")
+                print(f"{t.red}[ERROR] Unknown role. Access denied.{t.end}")
         else:
-            print("[ERROR] Invalid credentials.")
+            print(f"{t.red}[ERROR] Invalid credentials.{t.end}")
 
-        again = input("\nDo you want to log in again? (Y/N): ").strip().lower()
+        again = input(f"\n{t.blue}Do you want to log in again? (Y/N): {t.end}").strip().lower()
         if again != 'y':
-            print("[INFO] Exiting the system.")
+            print(f"{t.blue}[INFO] Exiting the system.{t.end}")
             break
 
-def register():
-    print("not implemented yet")
-    
-    pass
 
-def exit():
-    print("[INFO] Exiting the system. Goodbye!")
-    raise SystemExit(0)
+def check_temporary_password(username, session):
+    with sqlite3.connect("src/data/urban_mobility.db") as conn:
+        cursor = conn.cursor()
+        hashed_uname = hashlib.sha256(username.encode()).hexdigest()
+        
+        cursor.execute("SELECT id, must_change_password FROM users WHERE username_hash = ?", (hashed_uname,))
+        result = cursor.fetchone()
+
+        if result and result[1] == 1:
+            print("You must set a new password before continuing.")
+            new_pass = prompt_password(Prompt="Enter a new strong password: ")
+            service = SystemAdminService(session)
+            service.update_user(result[0], {"password_hash": new_pass})
+
+            # must_change_password terug naar 0
+            cursor.execute("""
+                UPDATE users
+                SET must_change_password = 0
+                WHERE username_hash = ?
+            """, (hashed_uname,))
+            conn.commit()
+
+            print(f"Password successfully changed for account: {username}")
+            click_to_return()

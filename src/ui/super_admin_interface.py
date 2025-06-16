@@ -1,190 +1,275 @@
-import os
+import sys
+from services.SuperAdminService import SuperAdminService
+from models.Session import Session
+from ui.menu_utils import navigate_menu, flush_input, clear, click_to_return
+from ui.prompts.user_prompts import *
 
-# Same as Service Engineer:
-# • To update the attributes of scooters in the system
-# • To search and retrieve the information of a scooter (check note 2 below)
-# Please note: The credentials of the Super Administrator are hard-coded. Therefore, it is not
-# required that he should be able to update his own password. The Super Administrator does not
-# need a password change option in the user interface.
-# Same as System Administrator:
-# • To check the list of users and their roles.
-# • To add a new Service Engineer to the backend system.
-# • To modify or update an existing Service Engineer account and profile.
-# • To delete an existing Service Engineer account.
-# • To reset an existing Service Engineer password (a temporary password).
-# • To see the logs file(s) of the backend system.
-# • To add a new Traveller to the backend system.
-# Analysis 8: Software Quality (INFSWQ01-A | INFSWQ21-A) OP4 | 2023-2024 CMI | HR
-# FINAL ASSIGNMENT: Urban Mobility Backend System PAGE 8
-# • To update the information of a Traveller in the backend system.
-# • To delete a Traveller from the backend system.
-# • To add a new scooter to the backend system.
-# • To update the information of a scooter in the backend system.
-# • To delete a scooter from the backend system.
-# • To search and retrieve the information of a Traveller (check note 2 below).
-# Specific for the Super Administrator:
-# • To add a new System Administrator to the backend system.
-# • To modify or update an existing System Administrator account and profile.
-# • To delete an existing System Administrator account.
-# • To reset an existing System Administrator password (a temporary password).
-# • To make a backup of the backend system and to restore a backup.
-# • To allow a specific System Administrator to restore a specific backup. For this purpose,
-# the Super Administrator should be able to generate a restore-code linked to a specific
-# backup and System Administrator. The restore-code is one-use-only.
-# • To revoke a previously generated restore-code for a System Administrator.
-# Please note: The Super Administrator should not be able to restore a specific backup on behalf of
-# a System Administrator (using a restore-code). The Super Administrator can only generate a
-# restore-code, but only the intended System Administrator is allowed to use it to perform the
-# actual restore.
-# Note 1: Service Engineers and System Administrators should have profiles, in addition to their
-# usernames and passwords. Their profiles contain only first name, last name and registration date.
-# Note 2: The search function must accept reasonable data fields as a search key. It must also accept
-# partial keys. For example, a user can search for a Traveller with a name “Mike Thomson” and customer
-# ID “2123287421” by entering any of these keys: “mik”, “omso”, or “2328”, etc.
 
-clear = lambda: os.system('cls' if os.name == 'nt' else 'clear')
+def super_admin_interface(session: Session):
+    menu_options = ["User Operations", "Account Settings", "Backups", "Traveller Operations", "Scooter Operations", "Exit"]
+    super_admin_service = SuperAdminService(session)
 
-class SuperAdminInterface:
-    def __init__(self):
-        self.commands = {
-            'help': self.show_help,
-            'exit': self.exit_interface,
-            'update_attributes_scooter': self.update_attributes_scooter,
-            'search_scooter': self.search_scooter,
-            'check_users': self.check_users,
-            'add_service_engineer': self.add_service_engineer,
-            'modify_service_engineer': self.modify_service_engineer,
-            'delete_service_engineer': self.delete_service_engineer,
-            'reset_service_engineer_password': self.reset_service_engineer_password,
-            'view_logs': self.view_logs,
-            'add_traveller': self.add_traveller,
-            'update_traveller': self.update_traveller,
-            'delete_traveller': self.delete_traveller,
-            'add_scooter': self.add_scooter,
-            'update_scooter': self.update_scooter,
-            'delete_scooter': self.delete_scooter,
-            'search_traveller': self.search_traveller,
-            'add_system_admin': self.add_system_admin,
-            'modify_system_admin': self.modify_system_admin,
-            'delete_system_admin': self.delete_system_admin,
-            'reset_system_admin_password': self.reset_system_admin_password,
-            'backup_system': self.backup_system,
-            'restore_backup': self.restore_backup,
-            'generate_restore_code': self.generate_restore_code,
-            'revoke_restore_code': self.revoke_restore_code
-        }
+    while True:
+        choice = navigate_menu(menu_options)
+        if choice == "User Operations":
+            user_menu(super_admin_service)
+        elif choice == "Account Settings":
+            account_settings_menu(super_admin_service)
+        elif choice == "Backups":
+            backup_menu(super_admin_service)
+        elif choice == "Traveller Operations":
+            traveller_operations_menu(super_admin_service)
+        elif choice == "Scooter Operations":
+            scooter_operations_menu(super_admin_service)
+        elif choice == "Exit":
+            sys.exit()
 
-    def show_help(self):
-        print("Available commands:")
-        for command in self.commands.keys():
-            print(f"- {command}")
-        return True
 
-    def exit_interface(self):
-        print("Exiting Super Admin Interface.")
-        return False
-    
-    def update_attributes_scooter(self):
-        print("Updating scooter information...")
-        return True
-    
-    def search_scooter(self):
-        print("Searching for scooter information...")
-        return True
-    
-    def check_users(self):
-        print("Checking list of users and their roles...")
-        return True
-    
-    def add_service_engineer(self):
-        print("Adding a new Service Engineer...")
-        return True
-    
-    def modify_service_engineer(self):
-        print("Modifying an existing Service Engineer account...")
-        return True
-    
-    def delete_service_engineer(self):
-        print("Deleting an existing Service Engineer account...")
-        return True
-    
-    def reset_service_engineer_password(self):
-        print("Resetting Service Engineer password...")
-        return True
-    
-    def view_logs(self):
-        print("Viewing system logs...")
-        return True
-    
-    def add_traveller(self):
-        print("Adding a new Traveller...")
-        return True
-    
-    def update_traveller(self):
-        print("Updating Traveller information...")
-        return True
-    
-    def delete_traveller(self):
-        print("Deleting a Traveller...")
-        return True
-    
-    def add_scooter(self):
-        print("Adding a new scooter...")
-        return True
-    
-    def update_scooter(self):
-        print("Updating scooter information...")
-        return True
-    
-    def delete_scooter(self):
-        print("Deleting a scooter...")
-        return True
-    
-    def search_traveller(self):
-        print("Searching for Traveller information...")
-        return True
-    
-    def add_system_admin(self):
-        print("Adding a new System Administrator...")
-        return True
-    
-    def modify_system_admin(self):
-        print("Modifying an existing System Administrator account...")
-        return True
-    
-    def delete_system_admin(self):
-        print("Deleting an existing System Administrator account...")
-        return True
-    
-    def reset_system_admin_password(self):
-        print("Resetting System Administrator password...")
-        return True
-    
-    def backup_system(self):
-        print("Backing up the system...")
-        return True
-    
-    def restore_backup(self):
-        print("Restoring a backup...")
-        return True
-    
-    def generate_restore_code(self):
-        print("Generating a restore code for a System Administrator...")
-        return True
-    
-    def revoke_restore_code(self):
-        print("Revoking a previously generated restore code...")
-        return True
+def user_menu(user_service):
+    menu_options = ["User List", "Add User", "Modify User", "Delete User", "Reset User Password", "Back"]
 
-def super_admin_interface():
-    print("Welcome to the Super Admin Interface")
+    while True:
+        choice = navigate_menu(menu_options)
+
+        if choice == "User List":
+            clear()
+            users = user_service.user_overview()
+            if users:
+                print("====== USER LIST ======")
+                for user in users:
+                    print(repr(user))
+            else:
+                print("Access denied, login again as atleast a system admin!")
+
+            flush_input()
+            click_to_return()
+
+        elif choice == "Add User":
+            required_fields = prompt_new_user(["system_admin", "service_engineer"])
+            success = user_service.add_user(["system_admin", "service_engineer"], required_fields)
+            flush_input()
+
+            if success:
+                print(f"User {required_fields['username']} added, role: {required_fields['role']}")
+                click_to_return()
+            else:
+                print("Access denied, login again as atleast a system admin!")
+
+        elif choice == "Delete User":
+                id_to_delete = user_selection_screen(user_service, "DELETE")
+                del_result = user_service.delete_user(["system_admin", "service_engineer"], id_to_delete)
+                print(del_result)
+                click_to_return()
+
+        elif choice == "Modify User":
+            id_to_update = user_selection_screen(user_service, "MODIFY")
+            fields_to_update = prompt_update_user(id_to_update, ["system_admin", "service_engineer"])
+            print(user_service.update_user(id_to_update, fields_to_update))
+            click_to_return()
+
+        elif choice == "Reset User Password":
+            id_to_reset = user_selection_screen(user_service, "RESET PASSWORD OF")
+            temp_pass = prompt_password(Prompt=f"Enter a temporary password for User {id_to_reset}: ")
+            user_service.reset_password(id_to_reset, ["system_admin", "service_engineer"], temp_pass)
+            click_to_return()
+
+        elif choice == "Back":
+            return
+
+def user_selection_screen(user_service, action: str) -> int:
+    clear()
+    flush_input()
+    users = user_service.user_overview()
+    if users:
+        print(f"====== {action} A USER ======")
+        for user in users:
+            if user.role != "super_admin":
+                print(repr(user))
+
+    return get_valid_user_id()
+
+def account_settings_menu(super_admin_service):
+    menu_options = ["Change Password", "Delete Account","Back"]
     
     while True:
-        command = input("Enter a command (type 'help' for options): ").strip().lower()
-
-        if command in SuperAdminInterface().commands:
-            if not SuperAdminInterface().commands[command]():
-                break
-        else:
+        choice = navigate_menu(menu_options)
+        
+        if choice == "Change Password":
             clear()
-            print(f"Unknown command: {command}. Type 'help' for options.")
+            new_password = input("Enter new password: ").strip()
+            if super_admin_service.change_password(new_password):
+                print("Password changed successfully.")
+            else:
+                print("Failed to change password.")
+            flush_input()
+            click_to_return()
+
+        elif choice == "Delete Account":
+            clear()
+            confirmation = input("Are you sure you want to delete your account? (yes/no): ").strip().lower()
+            if confirmation == "yes":
+                if super_admin_service.delete_account():
+                    print("Account deleted successfully.")
+                    sys.exit()
+                else:
+                    print("Failed to delete account.")
+            else:
+                print("Account deletion cancelled.")
+            flush_input()
+            click_to_return()
+
+        elif choice == "Back":
+            return
+
+def backup_menu(super_admin_service):
+    menu_options = ["Create Backup", "Restore Backup", "View Backups", "Back"]
+    
+    while True:
+        choice = navigate_menu(menu_options)
+        
+        if choice == "Create Backup":
+            clear()
+            print(super_admin_service.create_backup()[1])
+            flush_input()
+            click_to_return()
+
+        elif choice == "Restore Backup":
+            clear()
+            backups = super_admin_service.view_all_backups()
+            if backups:
+                print("Available Backups:")
+                for i, backup in enumerate(backups):
+                    print(f"Backup {i+1}. {backup}")
+            else:
+                print("No backups available.")
+            flush_input()
+
+            backup_id = get_valid_user_id(Prompt=f"Enter the Backup ID to restore (maximum of {len(backups)}): ")
+            while backup_id > len(backups):
+                backup_id = get_valid_user_id(Prompt=f"Enter the Backup ID to restore (maximum of {len(backups)-1}): ")
+
+            print(super_admin_service.restore_backup_without_code(backups[backup_id-1])[1])
+            flush_input()
+            click_to_return()
+
+        elif choice == "View Backups":
+            clear()
+            backups = super_admin_service.view_all_backups()
+            if backups:
+                print("Available Backups:")
+                for i, backup in enumerate(backups):
+                    print(f"Backup {i}. {backup}")
+            else:
+                print("No backups available.")
+            flush_input()
+            click_to_return()
+
+        elif choice == "Back":
+            return
+        
+def traveller_operations_menu(super_admin_service):
+    menu_options = ["Add Traveller", "Update Traveller", "Delete Traveller", "View Travellers", "Back"]
+
+    while True:
+        choice = navigate_menu(menu_options)
+
+        if choice == "Add Traveller":
+            clear()
+            traveller_data = super_admin_service.add_traveller()
+            if traveller_data:
+                print(f"Traveller added: {traveller_data}")
+            else:
+                print("Failed to add traveller.")
+            flush_input()
+            click_to_return()
+
+        elif choice == "Update Traveller":
+            clear()
+            traveller_id = input("Enter Traveller ID to update: ").strip()
+            updated_data = super_admin_service.update_traveller(traveller_id)
+            if updated_data:
+                print(f"Traveller updated: {updated_data}")
+            else:
+                print("Failed to update traveller.")
+            flush_input()
+            click_to_return()
+
+        elif choice == "Delete Traveller":
+            clear()
+            traveller_id = input("Enter Traveller ID to delete: ").strip()
+            if super_admin_service.delete_traveller(traveller_id):
+                print("Traveller deleted successfully.")
+            else:
+                print("Failed to delete traveller.")
+            flush_input()
+            click_to_return()
+
+        elif choice == "View Travellers":
+            while True:
+                menu_options = ["Search By ID", "Search By Last Name", "Back"]
+                choice = navigate_menu(menu_options)
+
+                if choice == "Search By ID":
+                    clear()
+                    flush_input()
+                    traveller_id = input("Enter Traveller ID: ")
+                    super_admin_service.view_travellers_by_id(traveller_id)
+                    click_to_return()
+
+                elif choice == "Search By Last Name":
+                    clear()
+                    flush_input()
+                    traveller_name = input("Enter Traveller Last Name: ")
+                    super_admin_service.view_travellers_by_last_name(traveller_name)
+                    click_to_return()
+
+                elif choice == "Back":
+                        clear()
+                        flush_input()
+                        return
+
+        elif choice == "Back":
+            clear()
+            flush_input()
+            return
+
+def scooter_operations_menu(super_admin_service):
+    menu_options = ["Add Scooter" , "Update Scooter", "Delete Scooter", "Search Scooter", "Back"]
+
+    while True:
+        choice = navigate_menu(menu_options)
+
+        if choice == "Add Scooter":
+            super_admin_service.add_scooter()
+        elif choice == "Update Scooter":
+            super_admin_service.update_scooter()
+        elif choice == "Delete Scooter":
+            super_admin_service.delete_scooter()
+        elif choice == "Search Scooter":
+            while True:
+                menu_options = ["Search By ID", "Search By Name", "Back"]
+                choice = navigate_menu(menu_options)
+
+                if choice == "Search By ID":
+                    clear()
+                    flush_input()
+                    scooter_id = input("Enter scooter ID: ")
+                    super_admin_service.search_scooter_by_id(scooter_id)
+                    click_to_return()
+
+                elif choice == "Search By Name":
+                    clear()
+                    flush_input()
+                    scooter_name = input("Enter scooter Name: ")
+                    super_admin_service.search_scooter_by_name(scooter_name)
+                    click_to_return()
+
+                elif choice == "Back":
+                    clear()
+                    flush_input()
+                    return
+                
+        elif choice == "Back":
+            clear()
+            flush_input()
+            return

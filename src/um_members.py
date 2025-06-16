@@ -1,11 +1,18 @@
-import sys
-from .ui.login_interface import login_interface
-from .data.database import initialize_database
+import sys, os
+from ui.login_interface import start_interface
+from data.database import initialize_database
+from dotenv import load_dotenv
+from ui.menu_utils import clear
+
 
 def main():
-    initialize_database()
+    load_dotenv()
+    clear()
+    
+    # initialize_database()
 
-    login_interface()
+    start_interface()
+
 
 if __name__ == "__main__":
     try:
