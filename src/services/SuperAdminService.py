@@ -86,5 +86,4 @@ class SuperAdminService(SystemAdminService):
                   0, datetime.now().strftime('%Y-%m-%d')))
             
             conn.commit()
-            print("New user ID:", cursor.lastrowid)
-        return True
+        return f"Restore code for System Admin {admin_id} for {backup_file} succesfully created"
