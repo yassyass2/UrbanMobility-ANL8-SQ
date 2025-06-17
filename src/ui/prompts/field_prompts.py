@@ -91,40 +91,40 @@ def prompt_model(Prompt = "Enter a Model: "):
             return model
         print("Invalid Model name")
 
-def prompt_serial_number(Prompt = "Enter a Serial Number: "):
+def prompt_serial_number(Prompt = "Enter a Serial Number (between 10-17 alphanumeric characters): "):
     while True:
         serial_number = input(Prompt).strip()
         if is_valid_serial_number(serial_number):
             return serial_number
-        print("Invalid Serial Number")
+        print("Invalid Serial Number. Must be between 10 and 17 alphanumeric characters.")
 
-def prompt_top_speed(Prompt = "Enter a Top Speed: "):
+def prompt_top_speed(Prompt = "Enter a Top Speed in kp/h: "):
     while True:
         top_speed = input(Prompt).strip()
         if is_valid_number(top_speed):
             return top_speed
         print("Invalid Top Speed")
 
-def prompt_capacity(Prompt = "Enter a Capacity: "):
+def prompt_capacity(Prompt = "Enter a Capacity in Wh: "):
     while True:
         capacity = input(Prompt).strip()
         if is_valid_number(capacity):
             return capacity
-        print("Invalid Capacity")
+        print("Invalid Capacity. Please enter a valid number.")
 
-def prompt_soc(Prompt = "Enter a State of Charge: "):
+def prompt_soc(Prompt = "Enter a State of Charge (battery percentage): "):
     while True:
         soc = input(Prompt).strip()
         if is_valid_number(soc):
             return soc
-        print("Invalid State of Charge")
+        print("Invalid State of Charge. Must be a number between 0 and 100.")
 
-def prompt_target_range_soc(Prompt = "Enter a Target Range State of Charge: "):
+def prompt_target_range_soc(Prompt = "Enter a Target Range State of Charge (min level and max level of the battery): "):
     while True:
         target_range_soc = input(Prompt).strip()
         if is_valid_number(target_range_soc):
             return target_range_soc
-        print("Invalid Target Range State of Charge")
+        print("Invalid Target Range State of Charge. Must be in format of xx-xxx.")
 
 def prompt_location(Prompt="Enter location coordinates (longitude, latitude) in range of 51.85000, 4.40000 to 51.98000, 4.60000: "):
     # Range of coordinates for Rotterdam
@@ -157,16 +157,16 @@ def prompt_out_of_service(Prompt="Choose a State of Service (In Service/Out of S
             return state_of_service[choice]
         print("Invalid input. Please enter 'In Service' or 'Out of Service'.")
 
-def prompt_mileage(Prompt = "Choose a Mileage: "):
+def prompt_mileage(Prompt = "Choose a Mileage (amount of km the scooter has travelled): "):
     while True:
         mileage = input(Prompt).strip()
-        if is_valid_number(mileage):
+        if is_valid_mileage(mileage):
             return mileage
-        print("Invalid Mileage")
+        print("Invalid Mileage. Please enter a valid number between 0 and 99999.")
 
 def prompt_last_maintenance(Prompt = "Choose Last Maintance date (yyyy-mm-dd): "):
     while True:
         last_maintenance = input(Prompt).strip()
         if is_valid_date_iso_8601(last_maintenance):
             return last_maintenance
-        print("Invalid Last Maintance Date")
+        print("Invalid Last Maintance Date. Please enter a valid date in the format yyyy-mm-dd.")

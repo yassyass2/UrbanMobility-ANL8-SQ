@@ -88,6 +88,15 @@ def is_valid_number(number):
         return num == num and num != float("inf") and num != float("-inf")
     except (ValueError, TypeError):
         return False
+
+def is_valid_mileage(mileage):
+    try:
+        miles = float(mileage)
+        if miles < 0 or miles > 99999:
+            return False
+        return True
+    except (ValueError, TypeError):
+        return False
     
 def is_valid_date_iso_8601(date: str) -> bool:
     try:
