@@ -45,6 +45,8 @@ class SystemAdminService(ServiceEngineerService):
             rows = cursor.fetchall()
 
         cipher = Fernet(os.getenv("FERNET_KEY").encode())
+        # cipher = Fernet(os.environ["FERNET_KEY"].encode())
+        # later vervangen met dit /\ (veiliger)
 
         users = [User(id=row[0], username=cipher.decrypt(row[1]).decode('utf-8'), password_hash=None,
                  role=row[2], first_name=row[3], last_name=row[4],
