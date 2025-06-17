@@ -651,6 +651,7 @@ class SystemAdminService(ServiceEngineerService):
                 scooter_data["last_maintenance"]
             ))
             conn.commit()
+            print("New scooter ID:", cursor.lastrowid)
         return True
 
     def delete_scooter(self) -> bool:
