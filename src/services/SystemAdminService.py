@@ -34,8 +34,6 @@ class SystemAdminService(ServiceEngineerService):
     def __init__(self, session: Session):
         super().__init__(session)
 
-
-
     def user_overview(self) -> list[User]:
         if (not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]):
             return None
@@ -197,7 +195,7 @@ class SystemAdminService(ServiceEngineerService):
             return (False, f"Backup failed: {e}")
 
     def restore_backup_with_code(self, code) -> bool:
-        if not self.session.is_valid() or self.session.role not in ["super_admin"]:
+        if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
             return "Fail, Session expired" if not self.session.is_valid() else "Must be super admin to perform this action."
         
         backup_path = os.path.join(BACKUP_DIR, code[1])
@@ -219,7 +217,11 @@ class SystemAdminService(ServiceEngineerService):
 
             shutil.copy2(extracted_db_path, DB_FILE)
 
-            return True, "Backup successfully restored."
+            with sqlite3.connect(DB_FILE) as conn:
+                cursor = conn.cursor()
+                cursor.execute("DELETE FROM restore_codes WHERE code = ?", (code,))
+                conn.commit()
+                conn.close()
 
         except Exception as e:
             return False, f"Error restoring backup: {str(e)}"
@@ -227,6 +229,7 @@ class SystemAdminService(ServiceEngineerService):
         finally:
             # Clean up van tijdelijke folder
             shutil.rmtree(TEMP_EXTRACT_PATH, ignore_errors=True)
+
 
     
     def traveller_overview(self) -> list[dict]:

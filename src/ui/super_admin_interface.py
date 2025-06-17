@@ -117,7 +117,7 @@ def backup_menu(super_admin_service):
             backups = super_admin_service.view_all_backups()
             if backups:
                 print("Available Backups:")
-                for i, backup in enumerate(backups):
+                for i, backup in enumerate(backups, 1):
                     print(f"Backup {i}. {backup}")
             else:
                 print("No backups available.")
@@ -136,7 +136,7 @@ def backup_menu(super_admin_service):
             backups = super_admin_service.view_all_backups()
             if backups:
                 print("Available Backups:")
-                for i, backup in enumerate(backups):
+                for i, backup in enumerate(backups, 1):
                     print(f"Backup {i}. {backup}")
             else:
                 print("No backups available.")
@@ -148,7 +148,7 @@ def backup_menu(super_admin_service):
             backups = super_admin_service.view_all_backups()
             if backups:
                 print("Available Backups:")
-                for i, backup in enumerate(backups):
+                for i, backup in enumerate(backups, 1):
                     print(f"Backup {i}. {backup}")
             else:
                 print("No backups available.")
