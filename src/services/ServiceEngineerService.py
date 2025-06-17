@@ -8,6 +8,7 @@ from cryptography.fernet import Fernet
 from datetime import date
 from ui.prompts.field_prompts import input_password
 from ui.menu_utils import clear
+from logger import *
 
 DB_FILE = 'src/data/urban_mobility.db'
 
@@ -17,6 +18,7 @@ class ServiceEngineerService():
 
     def update_password(self):
         if not self.session.is_valid():
+            log_to_db({"username": self.session.user, "activity": "Tried to change password", "additional_info": "Expired session", "suspicious": 0})
             print("Session expired")
             return
 
@@ -77,6 +79,7 @@ class ServiceEngineerService():
             )
             conn.commit()
             print("Password updated successfully.")
+            log_to_db({"username": self.session.user, "activity": "Changed their password", "additional_info": "succesful change", "suspicious": 0})
         except sqlite3.Error as e:
             print(f"Database error: {e}")
         finally:
@@ -84,6 +87,7 @@ class ServiceEngineerService():
 
     def search_scooter_by_id(self, scooter_id):
         if not self.session.is_valid():
+            log_to_db({"username": self.session.user, "activity": "Tried to search scooter", "additional_info": "Expired session", "suspicious": 0})
             print("session expired")
             return
 
@@ -103,10 +107,12 @@ class ServiceEngineerService():
         except sqlite3.Error as e:
             print(f"Database error: {e}")
         finally:
+            log_to_db({"username": self.session.user, "activity": "Searched for scooters by ID", "additional_info": "", "suspicious": 0})
             conn.close()
 
     def search_scooter_by_name(self, scooter_name):
         if not self.session.is_valid():
+            log_to_db({"username": self.session.user, "activity": "Tried to search scooter", "additional_info": "Expired session", "suspicious": 0})
             print("Session expired")
             return
         
@@ -125,13 +131,16 @@ class ServiceEngineerService():
         except sqlite3.Error as e:
             print(f"Database error: {e}")
         finally:
+            log_to_db({"username": self.session.user, "activity": "Searched for scooters by name", "additional_info": "", "suspicious": 0})
             conn.close()
 
 
     def update_scooter(self, scooter_id: int, to_update: dict):
         if not self.session.is_valid() or self.session.role not in ["service_engineer", "system_admin", "super_admin"]:
+            log_to_db({"username": self.session.user, "activity": "Tried to update scooter", "additional_info": "Expired session", "suspicious": 0})
             return "Fail, Session expired" if not self.session.is_valid() else "Must be at least service engineer to perform this action."
         if not to_update:
+            log_to_db({"username": self.session.user, "activity": "Tried to change password", "additional_info": "no fields provided.", "suspicious": 0})
             return "No fields provided to update."
 
         fields_query = ", ".join(f"{field} = ?" for field in to_update)
@@ -148,34 +157,8 @@ class ServiceEngineerService():
                     print(f"No scooter found with ID {scooter_id}.")
                     return False
                 print(f"Scooter with ID {scooter_id} updated successfully.")
+                log_to_db({"username": self.session.user, "activity": "Updated a scooter.", "additional_info": f"Scooter with ID {scooter_id} updated successfully.", "suspicious": 0})
                 return True
 
         except sqlite3.Error as e:
             return f"Database error: {e}"
-
-        
-
-    def change_password(self, new_password):
-        if not self.session.is_valid():
-            print("Session expired")
-            return
-        
-        if len(new_password) < 8 or len(new_password) > 10:
-            print("Password must be between 8 and 10 characters long.")
-            return
-        
-        hashed_password = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt())
-
-        # Update the password in the database
-        conn = sqlite3.connect('src/data/urban_mobility.db')
-        cursor = conn.cursor()
-        try:
-            cursor.execute("UPDATE users SET password = ? WHERE username = ?", (hashed_password, self.session.username))
-            conn.commit()
-        except sqlite3.Error as e:
-            print(f"Database error: {e}")
-            return
-        finally:
-            conn.close()
-        
-        print(f"Password changed successfully for user {self.session.username}.")

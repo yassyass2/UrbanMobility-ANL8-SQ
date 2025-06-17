@@ -5,7 +5,6 @@ from ui.menu_utils import navigate_menu, flush_input, clear, click_to_return
 from ui.prompts.scooter_prompts import *
 
 
-
 def service_engineer_interface(session: Session):
     menu_options = ["Update Password", "Update Scooters", "Search Scooter", "Exit"]
     service_engineer_service = ServiceEngineerService(session)
@@ -47,7 +46,7 @@ def service_engineer_interface(session: Session):
                     click_to_return()
 
                 elif choice == "Back":
-                    clear();
+                    clear()
                     flush_input()
                     return
 
