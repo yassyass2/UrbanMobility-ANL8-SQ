@@ -653,15 +653,47 @@ class SystemAdminService(ServiceEngineerService):
             conn.commit()
         return True
 
-    def delete_scooter(self, scooter_id: int) -> bool:
+    def delete_scooter(self) -> bool:
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            print("Unauthorized or session expired.")
             return False
 
         with sqlite3.connect(DB_FILE) as conn:
             cursor = conn.cursor()
+            cursor.execute("SELECT id, brand, model, location, out_of_service FROM scooters")
+            scooters = cursor.fetchall()
+
+            if not scooters:
+                print("No scooters found.")
+                return False
+
+            print("====== DELETE A SCOOTER ======")
+            for s in scooters:
+                print(f"[SCOOTER] ID: {s[0]} | Brand: {s[1]} | Model: {s[2]} | Location: {s[3]} | Out of Service: {bool(s[4])}")
+
+            scooter_id_input = input("\nEnter the ID of the scooter to delete: ").strip()
+            if not scooter_id_input.isdigit():
+                print("Invalid ID.")
+                return False
+            scooter_id = int(scooter_id_input)
+
+            confirm = input("Are you sure you want to delete this scooter? (Y/N): ").strip().lower()
+            if confirm not in ("yes", "y"):
+                print("Deletion cancelled.")
+                return False
+
+            cursor.execute("SELECT brand, model FROM scooters WHERE id = ?", (scooter_id,))
+            scooter_data = cursor.fetchone()
+
+            if not scooter_data:
+                print("Scooter not found.")
+                return False
+
             cursor.execute("DELETE FROM scooters WHERE id = ?", (scooter_id,))
             conn.commit()
-            return f"Scooter with ID {scooter_id} deleted successfully." if cursor.rowcount > 0 else f"No scooter found with ID {scooter_id}."
+
+            print(f"Scooter '{scooter_data[0]} {scooter_data[1]}' with ID {scooter_id} successfully deleted.")
+            return True
         
     def view_restore_codes(self, sys=True):
         conn = sqlite3.connect(DB_FILE)

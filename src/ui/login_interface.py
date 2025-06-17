@@ -56,7 +56,7 @@ def start_interface():
             print(f"{t.red}[ERROR] Invalid credentials.{t.end}")
 
         again = input(f"\n{t.blue}Do you want to log in again? (Y/N): {t.end}").strip().lower()
-        if again != 'y':
+        if again != 'y' and again != 'yes' and again != 'ja':
             print(f"{t.blue}[INFO] Exiting the system.{t.end}")
             break
 

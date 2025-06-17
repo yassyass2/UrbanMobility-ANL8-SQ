@@ -239,10 +239,9 @@ def scooter_operations_menu(system_admin_service):
         elif choice == "Delete Scooter":
             clear()
             flush_input()
-            id_to_delete = input("Enter the ID of the scooter to delete: ").strip()
-            del_result = system_admin_service.delete_scooter(id_to_delete)
-            print(del_result)
+            system_admin_service.delete_scooter()
             click_to_return()
+            
         elif choice == "Search Scooter":
             while True:
                 menu_options = ["Search By ID", "Search By Name", "Back"]
