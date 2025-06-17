@@ -5,6 +5,7 @@ import sqlite3
 import secrets
 import string
 from datetime import datetime
+from logger import *
 
 import zipfile
 import os
@@ -21,6 +22,7 @@ class SuperAdminService(SystemAdminService):
     
     def restore_backup_without_code(self, backup_filename: str) -> tuple[bool, str]:
         if not self.session.is_valid() or self.session.role not in ["super_admin"]:
+            log_to_db({"username": self.session.user, "activity": "Unauthorized attempt to restore backup", "additional_info": f"{self.session.user} has no super admin session.", "suspicious": 1})
             return "Fail, Session expired" if not self.session.is_valid() else "Must be super admin to perform this action."
          
         backup_path = os.path.join(BACKUP_DIR, backup_filename)
@@ -42,6 +44,7 @@ class SuperAdminService(SystemAdminService):
 
             shutil.copy2(extracted_db_path, DB_FILE)
 
+            log_to_db({"username": self.session.user, "activity": "Restored a backup", "additional_info": f"backup '{backup_filename}' restored.", "suspicious": 0})
             return True, "Backup successfully restored."
 
         except Exception as e:
@@ -53,6 +56,7 @@ class SuperAdminService(SystemAdminService):
 
     def generate_restore_code(self, backup_file, admin_id):
         if not self.session.is_valid() or self.session.role not in ["super_admin"]:
+            log_to_db({"username": self.session.user, "activity": "Unauthorized attempt to generate restore code", "additional_info": f"{self.session.user} has no super admin session.", "suspicious": 1})
             return "Fail, Session expired" if not self.session.is_valid() else "Must be super admin to perform this action."
 
         characters = string.ascii_uppercase + string.digits
@@ -72,9 +76,14 @@ class SuperAdminService(SystemAdminService):
                   0, datetime.now().strftime('%Y-%m-%d')))
             
             conn.commit()
+        log_to_db({"username": self.session.user, "activity": "Generated a Restore code", "additional_info": f"code is for '{backup_file}' and System admin '{admin_id}'", "suspicious": 0})
         return f"Restore code for System Admin {admin_id} for {backup_file} succesfully created"
 
     def revoke_restore_code(self, code_to_delete):
+        if not self.session.is_valid() or self.session.role not in ["super_admin"]:
+            log_to_db({"username": self.session.user, "activity": "Unauthorized attempt to revoke restore code", "additional_info": f"{self.session.user} has no super admin session.", "suspicious": 1})
+            return "Fail, Session expired" if not self.session.is_valid() else "Must be super admin to perform this action."
+
         with sqlite3.connect(DB_FILE) as conn:
             cursor = conn.cursor()
             cursor.execute("DELETE FROM restore_codes WHERE code = ?", (code_to_delete,))
@@ -84,6 +93,8 @@ class SuperAdminService(SystemAdminService):
             conn.close()
 
             if rows_deleted:
+                log_to_db({"username": self.session.user, "activity": "Revoked a Restore code", "additional_info": f"Revoked code '{code_to_delete}'", "suspicious": 0})
                 return f"Restore code '{code_to_delete}' deleted successfully."
             else:
+                log_to_db({"username": self.session.user, "activity": f"Tried to revoke restore code'{code_to_delete}'", "additional_info": "not found", "suspicious": 0})
                 return f"No restore code found for '{code_to_delete}'."

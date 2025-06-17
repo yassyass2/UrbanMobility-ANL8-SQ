@@ -21,8 +21,6 @@ def authenticate_user(username, password) -> bool:
         log_to_db({"username": username, "activity": f"Unsuccesful login as {username}", "additional_info": "Username doesn't exist.", "suspicious": 1})
     elif not bcrypt.checkpw(password.encode('utf-8'), row[2]):
         log_to_db({"username": username, "activity": f"Unsuccesful login as {username}", "additional_info": "Password was wrong.", "suspicious": 1})
-    else:
-        log_to_db({"username": username, "activity": f"Succesful login as {username}", "additional_info": "Succesfully logged in.", "suspicious": 0})
 
     return row and bcrypt.checkpw(password.encode('utf-8'), row[2])
 

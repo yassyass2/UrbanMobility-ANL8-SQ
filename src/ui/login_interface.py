@@ -41,6 +41,7 @@ def start_interface():
 
         if authenticate_user(username, password):
             role = get_role(username)
+            log_to_db({"username": username, "activity": f"Succesful login as {username}", "additional_info": f"Succesfully logged in with role {role}.", "suspicious": 0})
             session = Session(username, role)
             check_temporary_password(username, session)
 
@@ -85,5 +86,6 @@ def check_temporary_password(username, session):
             """, (hashed_uname,))
             conn.commit()
 
+            log_to_db({"username": username, "activity": f"{username} Resetted their password", "additional_info": "Temporary password changed", "suspicious": 0})
             print(f"Password successfully changed for account: {username}")
             click_to_return()
