@@ -178,34 +178,22 @@ def traveller_operations_menu(super_admin_service):
 
         if choice == "Add Traveller":
             clear()
-            traveller_data = super_admin_service.add_traveller()
-            if traveller_data:
-                print(f"Traveller added: {traveller_data}")
-            else:
-                print("Failed to add traveller.")
             flush_input()
+            super_admin_service.add_traveller()
             click_to_return()
 
         elif choice == "Update Traveller":
             clear()
-            traveller_id = input("Enter Traveller ID to update: ").strip()
-            updated_data = super_admin_service.update_traveller(traveller_id)
-            if updated_data:
-                print(f"Traveller updated: {updated_data}")
-            else:
-                print("Failed to update traveller.")
             flush_input()
+            super_admin_service.update_traveller()
             click_to_return()
 
         elif choice == "Delete Traveller":
             clear()
-            traveller_id = input("Enter Traveller ID to delete: ").strip()
-            if super_admin_service.delete_traveller(traveller_id):
-                print("Traveller deleted successfully.")
-            else:
-                print("Failed to delete traveller.")
             flush_input()
+            super_admin_service.delete_traveller()
             click_to_return()
+
 
         elif choice == "View Travellers":
             while True:

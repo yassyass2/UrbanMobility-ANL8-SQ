@@ -571,8 +571,12 @@ class SystemAdminService(ServiceEngineerService):
 
                     # Decrypt sensitive fields
                     for key in ["street", "zip_code", "city", "email", "mobile", "license_number"]:
-                        if traveller[key]:
-                            traveller[key] = cipher.decrypt(traveller[key].encode()).decode()
+                        try:
+                            if traveller[key]:
+                                traveller[key] = cipher.decrypt(traveller[key].encode()).decode()
+                        except Exception as e:
+                            print(f"[DECRYPTION ERROR] Field '{key}' in traveller ID {traveller['id']} is not valid encrypted data.")
+                            traveller[key] = "[DECRYPTION FAILED]"
 
                     for key, value in traveller.items():
                         print(f"{key.replace('_', ' ').title()}: {value}")
