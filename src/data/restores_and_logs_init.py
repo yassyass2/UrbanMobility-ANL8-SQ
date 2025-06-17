@@ -20,12 +20,13 @@ CREATE TABLE IF NOT EXISTS activity_logs (
     username TEXT,
     activity TEXT NOT NULL,
     additional_info TEXT,
-    suspicious INTEGER DEFAULT 0
+    suspicious INTEGER DEFAULT 0,
+    viewed INTEGER DEFAULT 0
 );
 """
 
 # Connect to the database and execute the SQL
 with sqlite3.connect(DB_FILE) as conn:
     cursor = conn.cursor()
-    cursor.execute(create_restore_codes_table_sql)
+    cursor.execute(create_logs)
     conn.commit()

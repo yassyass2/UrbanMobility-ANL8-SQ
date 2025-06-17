@@ -8,6 +8,7 @@ cipher = Fernet(os.getenv("FERNET_KEY").encode())
 
 
 def log_to_db(log_dict: dict, db_path: str = "src/data/urban_mobility.db"):
+    # log dict bevat username, activity, additional_info en suspicious
     now = datetime.now()
     log_dict["date"] = now.strftime("%Y-%m-%d")
     log_dict["time"] = now.strftime("%H:%M:%S")
