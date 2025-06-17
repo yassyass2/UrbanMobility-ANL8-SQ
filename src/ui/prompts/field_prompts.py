@@ -101,32 +101,32 @@ def prompt_serial_number(Prompt = "Enter a Serial Number (between 10-17 alphanum
 def prompt_top_speed(Prompt = "Enter a Top Speed in kp/h: "):
     while True:
         top_speed = input(Prompt).strip()
-        if is_valid_number(top_speed):
+        if is_valid_speed(top_speed):
             return top_speed
-        print("Invalid Top Speed")
+        print("Invalid Top Speed. Speed must be a number between 0 and 100.")
 
-def prompt_capacity(Prompt = "Enter a Capacity in Wh: "):
+def prompt_capacity(Prompt = "Enter a Battery Capacity in Wh (0-5000): "):
     while True:
         capacity = input(Prompt).strip()
-        if is_valid_number(capacity):
+        if is_valid_capacity(capacity):
             return capacity
         print("Invalid Capacity. Please enter a valid number.")
 
-def prompt_soc(Prompt = "Enter a State of Charge (battery percentage): "):
+def prompt_soc(Prompt = "Enter a State of Charge (battery percentage, between 0 and 100): "):
     while True:
         soc = input(Prompt).strip()
         if is_valid_number(soc):
             return soc
         print("Invalid State of Charge. Must be a number between 0 and 100.")
 
-def prompt_target_range_soc(Prompt = "Enter a Target Range State of Charge (min level and max level of the battery): "):
+def prompt_target_range_soc(Prompt = "Enter a Target Range State of Charge (min level and max level of the battery. In format 0-100): "):
     while True:
         target_range_soc = input(Prompt).strip()
-        if is_valid_number(target_range_soc):
+        if is_valid_range_soc(target_range_soc):
             return target_range_soc
-        print("Invalid Target Range State of Charge. Must be in format of xx-xxx.")
+        print("Invalid Target Range State of Charge. Must be in the format 'min-max' where both min and max are between 0 and 100, and min is smaller than max.")
 
-def prompt_location(Prompt="Enter location coordinates (longitude, latitude) in range of 51.85000, 4.40000 to 51.98000, 4.60000: "):
+def prompt_location(Prompt="Enter location coordinates (in format longitude, latitude) in range of 51.85000, 4.40000 to 51.98000, 4.60000: "):
     # Range of coordinates for Rotterdam
     min_lon, max_lon = 51.85000, 51.98000
     min_lat, max_lat = 4.40000, 4.60000
