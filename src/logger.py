@@ -2,9 +2,11 @@ import sqlite3
 from cryptography.fernet import Fernet
 from datetime import datetime
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
-# cipher = Fernet(os.environ["FERNET_KEY"].encode())
-cipher = Fernet(os.getenv("FERNET_KEY").encode())
+cipher = Fernet(os.environ["FERNET_KEY"].encode())
+
 
 
 def log_to_db(log_dict: dict, db_path: str = "src/data/urban_mobility.db"):
@@ -19,7 +21,7 @@ def log_to_db(log_dict: dict, db_path: str = "src/data/urban_mobility.db"):
     placeholders = ', '.join('?' for _ in encrypted_logs)
     values = list(encrypted_logs.values())
 
-    query = f"INSERT INTO logs ({columns}) VALUES ({placeholders})"
+    query = f"INSERT INTO activity_logs ({columns}) VALUES ({placeholders})"
 
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()

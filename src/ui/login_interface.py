@@ -10,6 +10,7 @@ from ui.prompts.field_prompts import *
 from ui.menu_utils import *
 import sqlite3
 import hashlib
+from logger import *
 
 
 t = TextColors
@@ -25,6 +26,7 @@ def start_interface():
         if len(username) < 8 or len(username) > 10 and username != 'super_admin':
             clear()
             print(f"{t.red}[ERROR] Username must be between 8 and 10 characters long.{t.end}")
+            log_to_db({"username": username, "activity": "Login attempt with incorrect username format", "additional_info": f"not between 8-10 chars", "suspicious": 0})
             continue
         password_raw = input_password()
 

@@ -5,24 +5,21 @@ import sqlite3
 import time
 import string, random
 import zipfile
+import hashlib
+import zipfile
+import shutil
+
 from models.Session import Session
 from models.User import User
 from services.ServiceEngineerService import ServiceEngineerService
 from services import auth
 from cryptography.fernet import Fernet
-import hashlib
 from datetime import date, datetime
 from ui.menu_utils import clear
-from services.validation import (
-    is_valid_name, is_valid_birthday, is_valid_gender, is_valid_street,
-    is_valid_house_number, is_valid_zip, is_valid_city, is_valid_email_and_domain,
-    is_valid_mobile, is_valid_license
-)
-import zipfile
-import shutil
+from services.validation import *
+from logger import log_to_db
 
 from cryptography.fernet import Fernet
-import hashlib
 from datetime import date, datetime
 
 DB_FILE = "src/data/urban_mobility.db"
@@ -36,6 +33,7 @@ class SystemAdminService(ServiceEngineerService):
 
     def user_overview(self) -> list[User]:
         if (not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]):
+            log_to_db({"username": self.session.user, "activity": "Unauthorized attempt to view users", "additional_info": f"{self.session.user} is not an admin.", "suspicious": 1})
             return None
 
         with sqlite3.connect(DB_FILE) as conn:
@@ -47,6 +45,8 @@ class SystemAdminService(ServiceEngineerService):
         cipher = Fernet(os.getenv("FERNET_KEY").encode())
         # cipher = Fernet(os.environ["FERNET_KEY"].encode())
         # later vervangen met dit /\ (veiliger)
+
+        log_to_db({"username": self.session.user, "activity": "Fetched the overview of users", "additional_info": f"{self.session.user} is an admin.", "suspicious": 0})
 
         users = [User(id=row[0], username=cipher.decrypt(row[1]).decode('utf-8'), password_hash=None,
                  role=row[2], first_name=row[3], last_name=row[4],
