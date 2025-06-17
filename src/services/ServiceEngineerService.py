@@ -145,9 +145,10 @@ class ServiceEngineerService():
                 conn.commit()
 
                 if cursor.rowcount == 0:
-                    return "No scooter found with the given ID."
-
-                return "Scooter updated successfully."
+                    print(f"No scooter found with ID {scooter_id}.")
+                    return False
+                print(f"Scooter with ID {scooter_id} updated successfully.")
+                return True
 
         except sqlite3.Error as e:
             return f"Database error: {e}"
