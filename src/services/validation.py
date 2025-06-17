@@ -98,6 +98,35 @@ def is_valid_mileage(mileage):
     except (ValueError, TypeError):
         return False
     
+def is_valid_speed(speed):
+    try:
+        speed_value = float(speed)
+        if speed_value < 0 or speed_value > 100:
+            return False
+        return True
+    except (ValueError, TypeError):
+        return False
+
+def is_valid_capacity(capacity):
+    try:
+        capacity_value = float(capacity)
+        if capacity_value < 0 or capacity_value > 5000:
+            return False
+        return True
+    except (ValueError, TypeError):
+        return False
+    
+def is_valid_range_soc(range_soc):
+    try:
+        if '-' not in range_soc:
+            return False
+        min_soc, max_soc = map(float, range_soc.split('-'))
+        if min_soc < 0 or max_soc > 100 or min_soc >= max_soc:
+            return False
+        return True
+    except (ValueError, TypeError):
+        return False
+    
 def is_valid_date_iso_8601(date: str) -> bool:
     try:
         datetime.datetime.strptime(date, "%Y-%m-%d")
