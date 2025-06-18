@@ -58,3 +58,5 @@ def view_logs(session, db_path: str = "app.db"):
             print(tabulate(decrypted_logs, headers=column_names, tablefmt="fancy_grid"))
         else:
             print("No logs to display.")
+    
+    log_to_db({"username": session.user, "activity": "Viewed activity logs", "additional_info": f"{session.user} an admin.", "suspicious": 0})
