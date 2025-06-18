@@ -754,6 +754,7 @@ class SystemAdminService(ServiceEngineerService):
         return True
 
     def traveller_overview(self) -> list[dict]:
+        # geen logging, wordt alleen aangeroepen bij update
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
             return []
 
