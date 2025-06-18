@@ -141,7 +141,8 @@ def backup_menu(system_admin_service):
 
         elif choice == "Restore Backup With Restore Code":
             clear()
-            if not system_admin_service.view_restore_codes():
+            if not system_admin_service.view_restore_codes(True):
+                flush_input()
                 click_to_return()
                 continue
 

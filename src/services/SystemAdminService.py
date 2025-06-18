@@ -741,7 +741,10 @@ class SystemAdminService(ServiceEngineerService):
         conn.close()
 
         if not records:
-            print("No restore codes found.")
+            if sys:
+                print("You have no restore codes. Ask a super admin to give you one.")
+                return False
+            print("There are no restore codes.")
             return False
 
         if sys:
