@@ -8,7 +8,7 @@ from logger import *
 
 
 def super_admin_interface(session: Session):
-    menu_options = ["User Operations", "Backups", "Traveller Operations", "Scooter Operations", "View Logs", "Exit"]
+    menu_options = ["User Operations", "Backups", "Traveller Operations", "Scooter Operations", "View All Logs", "View Unviewed Logs", "Exit"]
     super_admin_service = SuperAdminService(session)
 
     while True:
@@ -21,8 +21,12 @@ def super_admin_interface(session: Session):
             traveller_operations_menu(super_admin_service)
         elif choice == "Scooter Operations":
             scooter_operations_menu(super_admin_service)
-        elif choice == "View Logs":
+        elif choice == "View All Logs":
             view_logs(session)
+            flush_input()
+            click_to_return()
+        elif choice == "View Unviewed Logs":
+            view_logs(session, only_unviewed=True)
             flush_input()
             click_to_return()
         elif choice == "Exit":

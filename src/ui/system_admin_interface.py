@@ -10,7 +10,7 @@ from logger import *
 
 
 def system_admin_interface(session: Session):
-    menu_options = ["User Operations", "Account Settings", "Backups", "Traveller Operations", "Scooter Operations", "Exit"]
+    menu_options = ["User Operations", "Account Settings", "Backups", "Traveller Operations", "Scooter Operations", "View All Logs", "View Unviewed Logs", "Exit"]
     system_admin_service = SystemAdminService(session)
 
     while True:
@@ -25,8 +25,12 @@ def system_admin_interface(session: Session):
             traveller_operations_menu(system_admin_service)
         elif choice == "Scooter Operations":
             scooter_operations_menu(system_admin_service)
-        elif choice == "View Logs":
+        elif choice == "View All Logs":
             view_logs(session)
+            flush_input()
+            click_to_return()
+        elif choice == "View Unviewed Logs":
+            view_logs(session, only_unviewed=True)
             flush_input()
             click_to_return()
         else:

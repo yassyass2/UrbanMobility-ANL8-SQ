@@ -30,7 +30,7 @@ def log_to_db(log_dict: dict, db_path: str = "src/data/urban_mobility.db"):
         conn.commit()
 
 
-def view_logs(session, db_path: str = "src/data/urban_mobility.db"):
+def view_logs(session, only_unviewed=False, db_path: str = "src/data/urban_mobility.db"):
     if (not session.is_valid() or session.role not in ["super_admin", "system_admin"]):
         log_to_db({"username": session.user, "activity": "Unauthorized attempt to view system logs", "additional_info": f"{session.user} is not an admin.", "suspicious": 1})
         return
@@ -43,20 +43,31 @@ def view_logs(session, db_path: str = "src/data/urban_mobility.db"):
         # Column namen
         column_names = [description[0] for description in cursor.description]
 
+        logs_to_update = []
+
         decrypted_logs = []
         for row in rows:
             decrypted_row = []
-            for value in row:
-                try:
-                    decrypted_value = cipher.decrypt(value.encode()).decode()
-                except Exception:
-                    decrypted_value = value
-                decrypted_row.append(decrypted_value)
-            decrypted_logs.append(decrypted_row)
+            if not only_unviewed or cipher.decrypt(row[7].encode()).decode() == 0:
+                for value in row:
+                    try:
+                        decrypted_value = cipher.decrypt(value.encode()).decode()
+                    except Exception:
+                        decrypted_value = value
+                    decrypted_row.append(decrypted_value)
+
+                decrypted_logs.append(decrypted_row)
+                logs_to_update.append(row[0])
 
         if decrypted_logs:
             print(tabulate(decrypted_logs, headers=column_names, tablefmt="fancy_grid"))
-        else:
+        elif not only_unviewed:
             print("No logs to display.")
+        else:
+            print("Currently, there are no unviewed logs. ")
+
+        for log_id in logs_to_update:
+            cursor.execute("UPDATE activity_logs SET viewed = ? WHERE id = ?", (1, log_id))
+        conn.commit()
     
     log_to_db({"username": session.user, "activity": "Viewed activity logs", "additional_info": f"{session.user} an admin.", "suspicious": 0})
