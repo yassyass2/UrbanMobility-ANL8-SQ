@@ -753,6 +753,31 @@ class SystemAdminService(ServiceEngineerService):
             print("-----------------------------\n")
         return True
 
+    def traveller_overview(self) -> list[dict]:
+        if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            return []
+
+        cipher = Fernet(os.getenv("FERNET_KEY").encode())
+        overview = []
+
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, first_name, last_name, registration_date FROM travellers")
+            rows = cursor.fetchall()
+
+            for row in rows:
+                traveller_id = row[0]
+                first_name = row[1]
+                last_name = row[2]
+                reg_date = row[3]
+                overview.append({
+                    "id": traveller_id,
+                    "name": f"{first_name} {last_name}",
+                    "registration_date": reg_date
+                })
+
+        return overview
+
     def delete_account(self) -> None:
         if not self.session.is_valid():
             print("Session expired.")
