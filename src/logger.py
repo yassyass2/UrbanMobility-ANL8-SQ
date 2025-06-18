@@ -48,7 +48,7 @@ def view_logs(session, only_unviewed=False, db_path: str = "src/data/urban_mobil
         decrypted_logs = []
         for row in rows:
             decrypted_row = []
-            if not only_unviewed or cipher.decrypt(row[7].encode()).decode() == 0:
+            if not only_unviewed or row[7] == 0:
                 for value in row:
                     try:
                         decrypted_value = cipher.decrypt(value.encode()).decode()
@@ -70,4 +70,20 @@ def view_logs(session, only_unviewed=False, db_path: str = "src/data/urban_mobil
             cursor.execute("UPDATE activity_logs SET viewed = ? WHERE id = ?", (1, log_id))
         conn.commit()
     
-    log_to_db({"username": session.user, "activity": "Viewed activity logs", "additional_info": f"{session.user} an admin.", "suspicious": 0})
+    log_to_db({"username": session.user, "activity": "Viewed activity logs", "additional_info": f"{session.user} is an admin.", "suspicious": 0})
+
+
+def any_unviewed_suspicious_logs(db_path: str = "src/data/urban_mobility.db") -> bool:
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT suspicious FROM activity_logs WHERE viewed = ?", (0,))
+        rows = cursor.fetchall()
+
+        for (encrypted_suspicious,) in rows:
+            try:
+                decrypted = cipher.decrypt(encrypted_suspicious.encode()).decode()
+                if decrypted == "1":
+                    return True
+            except Exception as e:
+                continue
+    return False

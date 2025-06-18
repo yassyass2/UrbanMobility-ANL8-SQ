@@ -10,6 +10,10 @@ from logger import *
 def super_admin_interface(session: Session):
     menu_options = ["User Operations", "Backups", "Traveller Operations", "Scooter Operations", "View All Logs", "View Unviewed Logs", "Exit"]
     super_admin_service = SuperAdminService(session)
+    if any_unviewed_suspicious_logs():
+        print(f"[NOTIFICATION] Message for admin: {session.user}\n")
+        print(f"[WARNING] There are unviewed suspicious logs! go to unviewed logs to Audit them.")
+        click_to_return()
 
     while True:
         choice = navigate_menu(menu_options)
