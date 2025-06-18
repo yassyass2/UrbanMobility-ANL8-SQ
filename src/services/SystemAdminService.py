@@ -390,9 +390,11 @@ class SystemAdminService(ServiceEngineerService):
 
     def update_traveller(self) -> None:
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            log_to_db({"username": self.session.user, "activity": "Tried to update traveller", "additional_info": "Is not an admin", "suspicious": 1})
             print("Unauthorized or session expired.")
             return
 
+        log_to_db({"username": self.session.user, "activity": "Updated a traveller", "additional_info": "Success", "suspicious": 0})
         travellers = self.traveller_overview()
         if not travellers:
             print("No travellers found.")
@@ -493,9 +495,11 @@ class SystemAdminService(ServiceEngineerService):
 
     def delete_traveller(self) -> None:
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            log_to_db({"username": self.session.user, "activity": "Tried to delete traveller", "additional_info": "Is not an admin", "suspicious": 1})
             print("Unauthorized or session expired.")
             return
 
+        log_to_db({"username": self.session.user, "activity": "Deleted a traveller", "additional_info": "Success", "suspicious": 0})
         travellers = self.traveller_overview()
         if not travellers:
             print("No travellers found.")
@@ -532,15 +536,47 @@ class SystemAdminService(ServiceEngineerService):
             print(f"Traveller {full_name} with ID {traveller_id} successfully deleted.")
         except Exception as e:
             print(f"[ERROR] Failed to delete traveller: {e}")
+    
+    # Wordt alleen gebruikt door update_user, dus geen logging nodig
+    def get_traveller_by_id(self, traveller_id: int) -> dict | None:
+        try:
+            cipher = Fernet(os.getenv("FERNET_KEY").encode())
+
+            with sqlite3.connect(DB_FILE) as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM travellers WHERE id = ?", (traveller_id,))
+                row = cursor.fetchone()
+
+                if not row:
+                    return None
+
+                fields = [
+                    "id", "first_name", "last_name", "birthday", "gender",
+                    "street", "house_number", "zip_code", "city", "email",
+                    "mobile", "license_number", "registration_date"
+                ]
+
+                decrypted = dict(zip(fields, row))
+                for key in ["street", "zip_code", "city", "email", "mobile", "license_number"]:
+                    if decrypted[key]:
+                        decrypted[key] = cipher.decrypt(decrypted[key].encode()).decode()
+
+                return decrypted
+        except Exception as e:
+            print(f"[ERROR] Failed to load traveller: {e}")
+            return None
 
     def view_travellers_by_id(self, traveller_id):
-        if not self.session.is_valid():
-            print("Session Expired")
+        if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            log_to_db({"username": self.session.user, "activity": "Tried to view travellers by id", "additional_info": "Is not an admin", "suspicious": 1})
+            print("Session Expired or Not an admin")
             return
 
         cipher = Fernet(os.getenv("FERNET_KEY").encode())
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
+
+        log_to_db({"username": self.session.user, "activity": "Fetched travellers by id", "additional_info": "Success", "suspicious": 0})
 
         try:
             cursor.execute("SELECT * FROM travellers WHERE id LIKE ?", (f"%{traveller_id}%",))   
@@ -577,12 +613,15 @@ class SystemAdminService(ServiceEngineerService):
 
     def view_travellers_by_last_name(self, traveller_last_name):
         if not self.session.is_valid():
+            log_to_db({"username": self.session.user, "activity": "Tried to view travellers by last name", "additional_info": "Is not an admin", "suspicious": 1})
             print("Session Expired")
             return
 
         cipher = Fernet(os.getenv("FERNET_KEY").encode())
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
+
+        log_to_db({"username": self.session.user, "activity": "Fetched travellers by lastname", "additional_info": "Success", "suspicious": 0})
 
         try:
             cursor.execute("SELECT * FROM travellers WHERE last_name LIKE ?", (f"%{traveller_last_name}%",))   
