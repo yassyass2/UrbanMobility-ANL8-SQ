@@ -254,7 +254,6 @@ class SystemAdminService(ServiceEngineerService):
                 cursor = conn.cursor()
                 cursor.execute("DELETE FROM restore_codes WHERE code = ?", (code[0],))
                 conn.commit()
-                conn.close()
 
             log_to_db({"username": self.session.user, "activity": "Succesfully restored backup with code", "additional_info": f"", "suspicious": 0})
             return f"Backup {code[1]} Restored, code {code[0]} No longer usable"
