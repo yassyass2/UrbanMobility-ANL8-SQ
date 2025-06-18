@@ -56,7 +56,7 @@ class SystemAdminService(ServiceEngineerService):
     
     def add_user(self, allowed_roles: list, required_fields: dict) -> bool:
         if required_fields["role"] not in allowed_roles or not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
-            log_to_db({"username": self.session.user, "activity": "Unauthorized attempt to add user", "additional_info": f"not allowed to add user of role {required_fields["role"]}", "suspicious": 1})
+            log_to_db({"username": self.session.user, "activity": "Unauthorized attempt to add user", "additional_info": f"not allowed to add user of role {required_fields['role']}", "suspicious": 1})
             return False
 
         cipher = Fernet(os.getenv("FERNET_KEY").encode())
