@@ -268,36 +268,9 @@ class SystemAdminService(ServiceEngineerService):
             shutil.rmtree(TEMP_EXTRACT_PATH, ignore_errors=True)
 
     
-    def get_traveller_by_id(self, traveller_id: int) -> dict | None:
-        try:
-            cipher = Fernet(os.getenv("FERNET_KEY").encode())
-
-            with sqlite3.connect(DB_FILE) as conn:
-                cursor = conn.cursor()
-                cursor.execute("SELECT * FROM travellers WHERE id = ?", (traveller_id,))
-                row = cursor.fetchone()
-
-                if not row:
-                    return None
-
-                fields = [
-                    "id", "first_name", "last_name", "birthday", "gender",
-                    "street", "house_number", "zip_code", "city", "email",
-                    "mobile", "license_number", "registration_date"
-                ]
-
-                decrypted = dict(zip(fields, row))
-                for key in ["street", "zip_code", "city", "email", "mobile", "license_number"]:
-                    if decrypted[key]:
-                        decrypted[key] = cipher.decrypt(decrypted[key].encode()).decode()
-
-                return decrypted
-        except Exception as e:
-            print(f"[ERROR] Failed to load traveller: {e}")
-            return None
-    
     def add_traveller(self) -> None:
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            log_to_db({"username": self.session.user, "activity": "Tried to search travellers", "additional_info": "Is not an admin", "suspicious": 1})
             print("Unauthorized or session expired.")
             return
 
@@ -407,9 +380,11 @@ class SystemAdminService(ServiceEngineerService):
                 ))
 
                 conn.commit()
+                log_to_db({"username": self.session.user, "activity": "Added a traveller", "additional_info": "Success", "suspicious": 0})
                 print(f"Traveller added successfully with ID: {cursor.lastrowid}")
 
         except Exception as e:
+            log_to_db({"username": self.session.user, "activity": "Tried to add traveller", "additional_info": "Database error", "suspicious": 0})
             print(f"[ERROR] Failed to add traveller: {e}")
 
 
