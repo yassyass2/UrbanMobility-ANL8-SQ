@@ -128,7 +128,7 @@ def account_settings_menu(system_admin_service):
             return
 
 def backup_menu(system_admin_service):
-    menu_options = ["Create Backup", "Restore Backup", "View Backups", "Back"]
+    menu_options = ["Create Backup", "Restore Backup With Restore Code", "Show My Restore Codes", "Back"]
     
     while True:
         choice = navigate_menu(menu_options)
@@ -139,7 +139,7 @@ def backup_menu(system_admin_service):
             flush_input()
             click_to_return()
 
-        elif choice == "Restore Backup":
+        elif choice == "Restore Backup With Restore Code":
             clear()
             if not system_admin_service.view_restore_codes():
                 click_to_return()
@@ -152,18 +152,9 @@ def backup_menu(system_admin_service):
             flush_input()
             click_to_return()
 
-        elif choice == "View Backups":
+        elif choice == "Show My Restore Codes":
             clear()
-            backups = system_admin_service.view_all_backups()
-            if backups:
-                if "Fail" in backups:
-                    print(backups)
-                else:
-                    print("Available Backups:")
-                    for backup in backups:
-                        print(backup)
-            else:
-                print("No backups available.")
+            system_admin_service.view_restore_codes(True)
             flush_input()
             click_to_return()
 
