@@ -252,7 +252,7 @@ class SystemAdminService(ServiceEngineerService):
 
             with sqlite3.connect(DB_FILE) as conn:
                 cursor = conn.cursor()
-                cursor.execute("DELETE FROM restore_codes WHERE code = ?", (code,))
+                cursor.execute("DELETE FROM restore_codes WHERE code = ?", (code[0],))
                 conn.commit()
                 conn.close()
 
