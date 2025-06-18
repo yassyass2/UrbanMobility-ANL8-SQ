@@ -15,7 +15,7 @@ from services.ServiceEngineerService import ServiceEngineerService
 from services import auth
 from cryptography.fernet import Fernet
 from datetime import date, datetime
-from ui.menu_utils import clear
+from ui.menu_utils import *
 from services.validation import *
 from logger import log_to_db
 
@@ -56,6 +56,7 @@ class SystemAdminService(ServiceEngineerService):
     
     def add_user(self, allowed_roles: list, required_fields: dict) -> bool:
         if required_fields["role"] not in allowed_roles or not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            log_to_db({"username": self.session.user, "activity": "Unauthorized attempt to add user", "additional_info": f"not allowed to add user of role {required_fields["role"]}", "suspicious": 1})
             return False
 
         cipher = Fernet(os.getenv("FERNET_KEY").encode())
@@ -82,11 +83,13 @@ class SystemAdminService(ServiceEngineerService):
                   required_fields["first_name"], required_fields["last_name"], reg_date, username_hash))
             
             conn.commit()
+            log_to_db({"username": self.session.user, "activity": "Added a user", "additional_info": "", "suspicious": 0})
             print("New user ID:", cursor.lastrowid)
         return True
 
     def delete_user(self, allowed_roles: list, delete_id: int) -> str:
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            log_to_db({"username": self.session.user, "activity": "Unauthorized attempt to delete user", "additional_info": f"{self.session.user} is not an admin.", "suspicious": 1})
             return "Fail, Session expired" if not self.session.is_valid() else "Must be atleast system admin to perform this action."
 
         with sqlite3.connect(DB_FILE) as conn:
@@ -95,10 +98,12 @@ class SystemAdminService(ServiceEngineerService):
             id_and_username = cursor.fetchone()
 
             if id_and_username is None:
+                log_to_db({"username": self.session.user, "activity": "Failed attempt to delete user", "additional_info": "user doesn't exist", "suspicious": 0})
                 return "Delete failed, User doesn't exist"
 
             role = auth.get_role_id(delete_id)
             if role not in allowed_roles:
+                log_to_db({"username": self.session.user, "activity": "Unauthorized attempt to delete user", "additional_info": f"No permission for Role of user to delete", "suspicious": 1})
                 return f"Delete failed, you don't have permission to delete {role}s"
             
             cursor.execute("DELETE FROM users WHERE id = ?", (delete_id,))
@@ -106,12 +111,20 @@ class SystemAdminService(ServiceEngineerService):
 
         cipher = Fernet(os.getenv("FERNET_KEY").encode())
         decrypted_username = cipher.decrypt(id_and_username[1].encode('utf-8')).decode('utf-8')
+        log_to_db({"username": self.session.user, "activity": f"Deleted a user with ID {delete_id}", "additional_info": "", "suspicious": 0})
         return f"Succesfully deleted user with ID {delete_id} and Username {decrypted_username}"
     
     def update_user(self, id: int, to_update: dict):
-        if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
-            return "Fail, Session expired" if not self.session.is_valid() else "Must be atleast system admin to perform this action."
+        role_list = ["super_admin", "system_admin"]
+        role = auth.get_role_id(id)
+
+        if (role == "super_admin" or not self.session.is_valid() or self.session.role not in role_list
+        or self.session.role == "system_admin" and role in role_list):
+            log_to_db({"username": self.session.user, "activity": "Unauthorized attempt to update user", "additional_info": f"Updating role {role} not allowed", "suspicious": 1})
+            return "Fail, Session expired" if not self.session.is_valid() else f"Insufficient permissions to update user of role {role}"
+        
         if not to_update:
+            log_to_db({"username": self.session.user, "activity": "Failed attempt to delete user", "additional_info": f"No fields provided", "suspicious": 0})
             return "No fields provided to update."
         
         if "password_hash" in to_update.keys():
@@ -135,8 +148,10 @@ class SystemAdminService(ServiceEngineerService):
                 conn.commit()
 
                 if cursor.rowcount == 0:
+                    log_to_db({"username": self.session.user, "activity": "Failed attempt to update user", "additional_info": f"no user found with id {id}", "suspicious": 0})
                     return "No user found with the given ID."
 
+                log_to_db({"username": self.session.user, "activity": f"Updated user with id {id}", "additional_info": f"", "suspicious": 0})
                 return "User updated successfully."
 
         except sqlite3.Error as e:
@@ -159,8 +174,10 @@ class SystemAdminService(ServiceEngineerService):
 
     def reset_password(self, id, allowed_roles, temp_password):
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            log_to_db({"username": self.session.user, "activity": "Unauthorized attempt to reset user password", "additional_info": f"{self.session.user} is not an admin.", "suspicious": 1})
             return "Fail, Session expired" if not self.session.is_valid() else "Must be atleast system admin to perform this action."
         if auth.get_role_id(id) not in allowed_roles:
+            log_to_db({"username": self.session.user, "activity": "Unauthorized attempt to update user", "additional_info": f"{self.session.user} can't update {auth.get_role_id(id)} roles", "suspicious": 1})
             return f"You can't reset the password of a user with role {auth.get_role_id(id)}"
 
         password_hash = bcrypt.hashpw(temp_password.encode(), bcrypt.gensalt())
@@ -174,10 +191,12 @@ class SystemAdminService(ServiceEngineerService):
             """, (password_hash, id))
             conn.commit()
 
+        log_to_db({"username": self.session.user, "activity": f"Reset password for user {id}", "additional_info": f"Temporary password set", "suspicious": 0})
         return f"Temporary password for user {id} succesfully set"
 
     def create_backup(self) -> tuple[bool, str]:
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            log_to_db({"username": self.session.user, "activity": "Tried to create a backup", "additional_info": f"{self.session.user} is not an admin.", "suspicious": 1})
             return "Fail, Session expired" if not self.session.is_valid() else "Must be atleast system admin to perform this action."
         
         if not os.path.exists(DB_FILE):
@@ -192,18 +211,29 @@ class SystemAdminService(ServiceEngineerService):
         try:
             with zipfile.ZipFile(backup_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
                 zipf.write(DB_FILE, arcname=os.path.basename(DB_FILE))
+            
+            log_to_db({"username": self.session.user, "activity": "Succesfully created a backup", "additional_info": f"At {backup_path}", "suspicious": 0})
             return (True, f"Backup created at: {backup_path}")
         except Exception as e:
             return (False, f"Backup failed: {e}")
 
+
     def restore_backup_with_code(self, code) -> bool:
-        if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+        if not self.session.is_valid() or self.session.role not in ["system_admin", "super_admin"]:
+            log_to_db({"username": self.session.user, "activity": "Tried to restore a backup with code", "additional_info": f"Is not an admin", "suspicious": 1})
             return "Fail, Session expired" if not self.session.is_valid() else "Must be super admin to perform this action."
         
         backup_path = os.path.join(BACKUP_DIR, code[1])
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id FROM users WHERE username_hash = ?", (hashlib.sha256(self.session.user.encode()).hexdigest(),))
+            if cursor.fetchone()[0] != code[2]:
+                log_to_db({"username": self.session.user, "activity": "Tried to restore a backup with code", "additional_info": "Code was not theirs", "suspicious": 0})
+                return "Fail, this restore code is not yours. Only designated admin can use it to restore."
 
         if not os.path.exists(backup_path):
-            return False, f"Backup file '{code[1]}' not found."
+            log_to_db({"username": self.session.user, "activity": "Tried to restore backup", "additional_info": "no such backup", "suspicious": 0})
+            return f"Backup file '{code[1]}' not found."
 
         try:
             os.makedirs(TEMP_EXTRACT_PATH, exist_ok=True)
@@ -213,7 +243,8 @@ class SystemAdminService(ServiceEngineerService):
 
             db_files = [f for f in os.listdir(TEMP_EXTRACT_PATH) if f.endswith('.db')]
             if not db_files:
-                return False, "No database file found in the backup ZIP."
+                log_to_db({"username": self.session.user, "activity": "Tried to restore a backup with code", "additional_info": "No database found.", "suspicious": 0})
+                return "No database file found in the backup ZIP."
 
             extracted_db_path = os.path.join(TEMP_EXTRACT_PATH, db_files[0])
 
@@ -225,39 +256,17 @@ class SystemAdminService(ServiceEngineerService):
                 conn.commit()
                 conn.close()
 
+            log_to_db({"username": self.session.user, "activity": "Succesfully restored backup with code", "additional_info": f"", "suspicious": 0})
+            return f"Backup {code[1]} Restored, code {code[0]} No longer usable"
+
         except Exception as e:
-            return False, f"Error restoring backup: {str(e)}"
+            log_to_db({"username": self.session.user, "activity": "Tried to restore a backup with code", "additional_info": "Database error", "suspicious": 0})
+            return f"Error restoring backup: {str(e)}"
 
         finally:
             # Clean up van tijdelijke folder
             shutil.rmtree(TEMP_EXTRACT_PATH, ignore_errors=True)
 
-
-    
-    def traveller_overview(self) -> list[dict]:
-        if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
-            return []
-
-        cipher = Fernet(os.getenv("FERNET_KEY").encode())
-        overview = []
-
-        with sqlite3.connect(DB_FILE) as conn:
-            cursor = conn.cursor()
-            cursor.execute("SELECT id, first_name, last_name, registration_date FROM travellers")
-            rows = cursor.fetchall()
-
-            for row in rows:
-                traveller_id = row[0]
-                first_name = row[1]
-                last_name = row[2]
-                reg_date = row[3]
-                overview.append({
-                    "id": traveller_id,
-                    "name": f"{first_name} {last_name}",
-                    "registration_date": reg_date
-                })
-
-        return overview
     
     def get_traveller_by_id(self, traveller_id: int) -> dict | None:
         try:

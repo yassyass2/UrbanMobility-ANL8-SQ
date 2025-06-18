@@ -147,8 +147,7 @@ def backup_menu(system_admin_service):
 
             restore_record = validate_restore_code(system_admin_service.session.user)
             if restore_record:
-                system_admin_service.restore_backup_with_code(restore_record)
-                print(f"Backup {restore_record[1]} Restored, code {restore_record[0]} No longer usable")
+                print(system_admin_service.restore_backup_with_code(restore_record))
 
             flush_input()
             click_to_return()

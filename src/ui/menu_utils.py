@@ -20,6 +20,11 @@ def click_to_return():
     msvcrt.getch()
 
 
+def click_to_renew_session():
+    print(f"\n{t.blue}press any key to return to create a new session...{t.end}")
+    msvcrt.getch()
+
+
 def navigate_menu(options):
     selected = 0
 
