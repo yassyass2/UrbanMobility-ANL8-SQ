@@ -661,8 +661,8 @@ class SystemAdminService(ServiceEngineerService):
             cursor = conn.cursor()
             cursor.execute('''
                 INSERT INTO scooters (
-                    brand, model, serial_number, top_speed, battery_capacity, soc, target_range_soc, location, out_of_service, mileage, last_maintenance
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    brand, model, serial_number, top_speed, battery_capacity, soc, target_range_soc, location, out_of_service, mileage, last_maintenance, in_service
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
             ''', (
                 scooter_data["brand"],
                 scooter_data["model"],
@@ -674,7 +674,8 @@ class SystemAdminService(ServiceEngineerService):
                 scooter_data["location"],
                 scooter_data["out_of_service"],
                 scooter_data["mileage"],
-                scooter_data["last_maintenance"]
+                scooter_data["last_maintenance"],
+                scooter_data["in_service"]
             ))
             conn.commit()
             print("New scooter ID:", cursor.lastrowid)

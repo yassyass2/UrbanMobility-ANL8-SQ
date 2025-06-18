@@ -69,6 +69,7 @@ def create_scooters_table(cursor):
             location VARCHAR(50),
             out_of_service INT,
             mileage DECIMAL(7,1),
-            last_maintenance DATE
+            last_maintenance DATE,
+            in_service DATE
         );
     """)

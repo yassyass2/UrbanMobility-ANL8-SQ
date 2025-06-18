@@ -1,5 +1,6 @@
 from ui.menu_utils import clear, flush_input
 from ui.prompts.field_prompts import *
+from datetime import datetime
 
 
 def prompt_new_scooter():
@@ -17,6 +18,7 @@ def prompt_new_scooter():
     out_of_service = prompt_out_of_service()
     mileage = prompt_mileage()
     last_maintenance = prompt_last_maintenance()
+    in_service = datetime.now().strftime("%Y-%m-%d")
 
     return {
         "brand": brand,
@@ -29,7 +31,8 @@ def prompt_new_scooter():
         "location": location,
         "out_of_service": out_of_service,
         "mileage": mileage,
-        "last_maintenance": last_maintenance
+        "last_maintenance": last_maintenance,
+        "in_service": in_service
     }
 
 def prompt_update_scooter(scooter_id: int, role: str):
