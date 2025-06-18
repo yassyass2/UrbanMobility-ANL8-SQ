@@ -53,7 +53,7 @@ def prompt_password(Prompt= "Enter a password: "):
         print("Invalid password format.")
 
 
-def prompt_role(roles, Prompt = "Enter role (service_engineer / system_admin / super_admin): "):
+def prompt_role(roles, Prompt = "Enter role (service_engineer / system_admin): "):
     while True:
         role = input(Prompt).strip().lower()
         if role not in roles:
