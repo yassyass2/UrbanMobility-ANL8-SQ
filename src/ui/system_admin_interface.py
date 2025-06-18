@@ -6,6 +6,7 @@ from services.validation import *
 from ui.prompts.scooter_prompts import prompt_new_scooter, prompt_update_scooter
 from ui.menu_utils import navigate_menu, flush_input, clear, click_to_return
 from ui.prompts.user_prompts import *
+from logger import *
 
 
 def system_admin_interface(session: Session):
@@ -24,6 +25,10 @@ def system_admin_interface(session: Session):
             traveller_operations_menu(system_admin_service)
         elif choice == "Scooter Operations":
             scooter_operations_menu(system_admin_service)
+        elif choice == "View Logs":
+            view_logs(session)
+            flush_input()
+            click_to_return()
         else:
             flush_input()
             sys.exit()
