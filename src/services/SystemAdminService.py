@@ -654,6 +654,7 @@ class SystemAdminService(ServiceEngineerService):
 
     def add_scooter(self, scooter_data: dict) -> bool:
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
+            log_to_db({"username": self.session.user, "activity": "Tried to add scooter", "additional_info": "Not an admin", "suspicious": 1})
             return False
 
         with sqlite3.connect(DB_FILE) as conn:
@@ -677,13 +678,16 @@ class SystemAdminService(ServiceEngineerService):
             ))
             conn.commit()
             print("New scooter ID:", cursor.lastrowid)
+            log_to_db({"username": self.session.user, "activity": "Added a scooter", "additional_info": f"Serial N0: {scooter_data['serial_number']}", "suspicious": 0})
         return True
 
     def delete_scooter(self) -> bool:
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
             print("Unauthorized or session expired.")
+            log_to_db({"username": self.session.user, "activity": "tried to delete scooter", "additional_info": "not an admin", "suspicious": 1})
             return False
 
+        log_to_db({"username": self.session.user, "activity": "Deleted a scooter", "additional_info": "Success", "suspicious": 0})
         with sqlite3.connect(DB_FILE) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT id, brand, model, location, out_of_service FROM scooters")
@@ -722,6 +726,7 @@ class SystemAdminService(ServiceEngineerService):
             return True
         
     def view_restore_codes(self, sys=True):
+        log_to_db({"username": self.session.user, "activity": "Viewed their restore codes", "additional_info": "Success", "suspicious": 0})
         conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
 
@@ -781,6 +786,7 @@ class SystemAdminService(ServiceEngineerService):
 
     def delete_account(self) -> None:
         if not self.session.is_valid():
+            log_to_db({"username": self.session.user, "activity": "Tried to delete their account", "additional_info": "No session", "suspicious": 1})
             print("Session expired.")
             return
 
@@ -814,6 +820,7 @@ class SystemAdminService(ServiceEngineerService):
                 cipher = Fernet(os.getenv("FERNET_KEY").encode())
                 decrypted_username = cipher.decrypt(encrypted_username.encode()).decode()
                 print(f"Deleted account for user: {decrypted_username}")
+                log_to_db({"username": self.session.user, "activity": "Deleted their account", "additional_info": "Success", "suspicious": 0})
                 
                 print("\nSession terminated. Returning to login menu...")
                 
@@ -828,6 +835,7 @@ class SystemAdminService(ServiceEngineerService):
 
     def view_all_backups(self):
         if not self.session.is_valid() or self.session.role not in ["super_admin"]:
+            log_to_db({"username": self.session.user, "activity": "Tried to view all backups", "additional_info": "Not a super admin", "suspicious": 1})
             return "Fail, Session expired" if not self.session.is_valid() else "Fail, Must be super admin to perform this action."
 
         if not os.path.exists(BACKUP_DIR):
