@@ -105,7 +105,7 @@ def user_selection_screen(user_service, action: str) -> int:
     return get_valid_user_id()
 
 def account_settings_menu(system_admin_service):
-    menu_options = ["Update Password", "Delete Account", "Back"]
+    menu_options = ["Update Password", "Delete Account", "Update Your Profile", "Back"]
     
     while True:
         choice = navigate_menu(menu_options)
@@ -121,6 +121,13 @@ def account_settings_menu(system_admin_service):
             clear()
             flush_input()
             system_admin_service.delete_account()
+            flush_input()
+            click_to_return()
+        
+        elif choice == "Update Your Profile":
+            clear()
+            flush_input()
+            system_admin_service.update_own_account()
             flush_input()
             click_to_return()
 
