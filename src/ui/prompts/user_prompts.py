@@ -43,7 +43,7 @@ def prompt_update_user(id, role_options):
     if "2" in numbers_csv:
         updates["last_name"] = prompt_last_name("Enter new Last name: ")
     if "3" in numbers_csv:
-        updates["role"] = prompt_role(role_options, "Enter the new  role (service_engineer / system_admin / super_admin): ")
+        updates["role"] = prompt_role(role_options, "Enter the new  role (service_engineer / system_admin): ")
     if "4" in numbers_csv:
         updates["username"] = prompt_username("Enter new username: ")
     if "5" in numbers_csv:
