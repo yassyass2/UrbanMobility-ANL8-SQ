@@ -155,7 +155,7 @@ def is_valid_date_iso_8601(date: str) -> bool:
         date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
         today = datetime.date.today()
         valid_date = (today - date).days / 365.25
-        return 0 < valid_date <= 99
+        return 0 <= valid_date <= 99
     except ValueError:
         return False
 
