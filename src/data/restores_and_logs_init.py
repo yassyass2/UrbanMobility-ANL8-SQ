@@ -1,6 +1,6 @@
 import sqlite3
 
-DB_FILE = "src/data/urban_mobility.db"
+DB_FILE = "data/urban_mobility.db"
 
 create_restore_codes_table_sql = """
 CREATE TABLE IF NOT EXISTS restore_codes (

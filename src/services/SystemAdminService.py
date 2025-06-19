@@ -6,7 +6,6 @@ import time
 import string, random
 import zipfile
 import hashlib
-import zipfile
 import shutil
 
 from models.Session import Session
@@ -23,7 +22,7 @@ from ui.prompts.user_prompts import *
 from cryptography.fernet import Fernet
 from datetime import date, datetime
 
-DB_FILE = "src/data/urban_mobility.db"
+DB_FILE = "data/urban_mobility.db"
 BACKUP_DIR = "system_backups"
 TEMP_EXTRACT_PATH = "temp_restore" 
 

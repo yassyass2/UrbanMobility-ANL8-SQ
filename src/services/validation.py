@@ -159,7 +159,7 @@ def is_valid_date_iso_8601(date: str) -> bool:
         return False
 
 def validate_restore_code(code_username):
-    db_path="src/data/urban_mobility.db"
+    db_path="data/urban_mobility.db"
     flush_input()
     code = input("Enter your 12-character restore code: ").strip()
 

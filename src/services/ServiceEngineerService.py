@@ -5,12 +5,11 @@ import sys
 import hashlib
 from models.Session import Session
 from cryptography.fernet import Fernet
-from datetime import date
 from ui.prompts.field_prompts import input_password
 from ui.menu_utils import clear
 from logger import *
 
-DB_FILE = 'src/data/urban_mobility.db'
+DB_FILE = 'data/urban_mobility.db'
 
 class ServiceEngineerService():
     def __init__(self, session: Session):
@@ -92,7 +91,7 @@ class ServiceEngineerService():
             return
 
         # Connect to the database
-        conn = sqlite3.connect('src/data/urban_mobility.db')
+        conn = sqlite3.connect('data/urban_mobility.db')
         cursor = conn.cursor()
 
         try:
@@ -116,7 +115,7 @@ class ServiceEngineerService():
             print("Session expired")
             return
         
-        conn = sqlite3.connect('src/data/urban_mobility.db')
+        conn = sqlite3.connect('data/urban_mobility.db')
         cursor = conn.cursor()
 
         try:
@@ -147,7 +146,7 @@ class ServiceEngineerService():
         new_values = list(to_update.values())
 
         try:
-            with sqlite3.connect('src/data/urban_mobility.db') as conn:
+            with sqlite3.connect('data/urban_mobility.db') as conn:
                 cursor = conn.cursor()
                 query = f"UPDATE scooters SET {fields_query} WHERE id = ?"
                 cursor.execute(query, new_values + [scooter_id])

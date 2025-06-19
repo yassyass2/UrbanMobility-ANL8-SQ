@@ -4,7 +4,7 @@ from visual.text_colors import TextColors
 
 t = TextColors
 
-DB_FILE = "src/data/urban_mobility.db"
+DB_FILE = "data/urban_mobility.db"
 
 
 def initialize_database():

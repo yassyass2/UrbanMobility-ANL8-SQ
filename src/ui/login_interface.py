@@ -68,7 +68,7 @@ def start_interface():
 
 
 def check_temporary_password(username, session):
-    with sqlite3.connect("src/data/urban_mobility.db") as conn:
+    with sqlite3.connect("data/urban_mobility.db") as conn:
         cursor = conn.cursor()
         hashed_uname = hashlib.sha256(username.encode()).hexdigest()
         

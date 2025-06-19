@@ -10,7 +10,7 @@ cipher = Fernet(os.environ["FERNET_KEY"].encode())
 
 
 
-def log_to_db(log_dict: dict, db_path: str = "src/data/urban_mobility.db"):
+def log_to_db(log_dict: dict, db_path: str = "data/urban_mobility.db"):
     # log dict bevat username, activity, additional_info en suspicious
     now = datetime.now()
     log_dict["date"] = now.strftime("%Y-%m-%d")
@@ -30,7 +30,7 @@ def log_to_db(log_dict: dict, db_path: str = "src/data/urban_mobility.db"):
         conn.commit()
 
 
-def view_logs(session, only_unviewed=False, db_path: str = "src/data/urban_mobility.db"):
+def view_logs(session, only_unviewed=False, db_path: str = "data/urban_mobility.db"):
     if (not session.is_valid() or session.role not in ["super_admin", "system_admin"]):
         log_to_db({"username": session.user, "activity": "Unauthorized attempt to view system logs", "additional_info": f"{session.user} is not an admin.", "suspicious": 1})
         return
@@ -73,7 +73,7 @@ def view_logs(session, only_unviewed=False, db_path: str = "src/data/urban_mobil
     log_to_db({"username": session.user, "activity": "Viewed activity logs", "additional_info": f"{session.user} is an admin.", "suspicious": 0})
 
 
-def any_unviewed_suspicious_logs(db_path: str = "src/data/urban_mobility.db") -> bool:
+def any_unviewed_suspicious_logs(db_path: str = "data/urban_mobility.db") -> bool:
     with sqlite3.connect(db_path) as conn:
         cursor = conn.cursor()
         cursor.execute("SELECT suspicious FROM activity_logs WHERE viewed = ?", (0,))

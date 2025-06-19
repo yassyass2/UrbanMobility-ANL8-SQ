@@ -1,5 +1,4 @@
 from models.Session import Session
-from models.User import User
 from services.SystemAdminService import SystemAdminService
 import sqlite3
 import secrets
@@ -11,7 +10,7 @@ import zipfile
 import os
 import shutil
 
-DB_FILE = "src/data/urban_mobility.db"
+DB_FILE = "data/urban_mobility.db"
 BACKUP_DIR = "system_backups"
 TEMP_EXTRACT_PATH = "temp_restore"
 

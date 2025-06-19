@@ -7,7 +7,7 @@ from logger import *
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-DB_FILE = "src/data/urban_mobility.db"
+DB_FILE = "data/urban_mobility.db"
 
 
 def authenticate_user(username, password) -> bool:

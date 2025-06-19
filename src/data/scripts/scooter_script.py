@@ -13,7 +13,7 @@ def insert_scooters(cursor):
     """, scooters)
 
 if __name__ == "__main__":
-    conn = sqlite3.connect('src/data/urban_mobility.db')
+    conn = sqlite3.connect('data/urban_mobility.db')
     cur = conn.cursor()
     insert_scooters(cur)
     conn.commit()

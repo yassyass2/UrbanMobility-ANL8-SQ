@@ -14,7 +14,7 @@ def insert_travellers(cursor):
     """, travellers)
     
 if __name__ == "__main__":
-    conn = sqlite3.connect('src/data/urban_mobility.db')
+    conn = sqlite3.connect('data/urban_mobility.db')
     cur = conn.cursor()
     insert_travellers(cur)
     conn.commit()
