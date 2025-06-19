@@ -192,6 +192,8 @@ class ServiceEngineerService():
                 if not exists:
                     print(f"No scooter found with ID {scooter_id}.")
                     return False
+                
+                
 
                 for field in encrypted_fields:
                     if field in to_update:
@@ -250,3 +252,26 @@ class ServiceEngineerService():
         except Exception as e:
             print(f"[ERROR] Failed to load scooter: {e}")
             return None
+        
+    def get_scooter_list(self):
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, brand, model, location, out_of_service FROM scooters")
+            scooters = cursor.fetchall()
+
+            if not scooters:
+                print("No scooters found.")
+                return False
+
+            print("====== DELETE A SCOOTER ======")
+            for s in scooters:
+                scooter_id = s[0]
+                brand = s[1]
+                model = s[2]
+                try:
+                    location = cipher.decrypt(s[3].encode()).decode()
+                except Exception:
+                    location = "[DECRYPTION FAILED]"
+                out_of_service = bool(s[4])
+
+                print(f"[SCOOTER] ID: {scooter_id} | Brand: {brand} | Model: {model} | Location: {location} | Out of Service: {out_of_service}")
