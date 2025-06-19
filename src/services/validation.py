@@ -162,7 +162,7 @@ def is_valid_date_iso_8601(date: str) -> bool:
 def validate_restore_code(code_username):
     db_path="data/urban_mobility.db"
     flush_input()
-    code = input("Enter your 12-character restore code: ").strip()
+    code = input("Enter the 12-character restore code: ").strip()
 
     if not re.fullmatch(r'[A-Z0-9]{12}', code):
         print("Invalid format. Code must be 12 characters, using only uppercase letters and numbers.")
@@ -182,6 +182,40 @@ def validate_restore_code(code_username):
         decrypted_code = cipher.decrypt(row[0].encode()).decode()
         if decrypted_code == code:
             cursor.execute("SELECT * FROM restore_codes WHERE code = ? AND system_admin_id = ?", (row[0], belong_id))
+            result = cursor.fetchone()
+            break
+    conn.close()
+
+    if result:
+        print("Restore code is valid and exists. restoring backup...")
+        return result
+    else:
+        print("Restore code not found.")
+        flush_input()
+        click_to_return()
+        return None
+
+
+def validate_code():
+    db_path="data/urban_mobility.db"
+    flush_input()
+    code = input("Enter the 12-character restore code: ").strip()
+
+    if not re.fullmatch(r'[A-Z0-9]{12}', code):
+        print("Invalid format. Code must be 12 characters, using only uppercase letters and numbers.")
+        return None
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    cipher = Fernet(os.getenv("FERNET_KEY").encode())
+    cursor.execute("SELECT code FROM restore_codes")
+    rows = cursor.fetchall()
+
+    for row in rows:
+        decrypted_code = cipher.decrypt(row[0].encode()).decode()
+        if decrypted_code == code:
+            cursor.execute("SELECT * FROM restore_codes WHERE code = ?", (row[0],))
             result = cursor.fetchone()
             break
     conn.close()

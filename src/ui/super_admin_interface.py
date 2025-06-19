@@ -6,6 +6,8 @@ from ui.prompts.user_prompts import *
 from ui.prompts.scooter_prompts import *
 from logger import *
 from services.validation import is_valid_number
+from cryptography.fernet import Fernet
+import os
 
 
 def super_admin_interface(session: Session):
@@ -123,7 +125,7 @@ def show_system_admins(user_service) -> int:
     return get_valid_admin_id(system_admins, Prompt=f"Enter the admin ID to make a restore code for: ")
 
 def backup_menu(super_admin_service):
-    menu_options = ["Create Backup", "Restore Backup", "View Backups", "Generate Restore Code", "Show Restore Codes", "Back"]
+    menu_options = ["Create Backup", "Restore Backup", "View Backups", "Generate Restore Code", "Show Restore Codes", "Revoke A Code", "Back"]
     
     while True:
         choice = navigate_menu(menu_options)
@@ -186,6 +188,21 @@ def backup_menu(super_admin_service):
         elif choice == "Show Restore Codes":
             clear()
             super_admin_service.view_restore_codes(False)
+            flush_input()
+            click_to_return()
+        
+        elif choice == "Revoke A Code":
+            clear()
+            if not super_admin_service.view_restore_codes(False):
+                flush_input()
+                click_to_return()
+                continue
+            cipher = Fernet(os.getenv("FERNET_KEY").encode())
+
+            restore_record = validate_code()
+            if restore_record:
+                print(super_admin_service.revoke_restore_code(cipher.decrypt(restore_record[0].encode()).decode()))
+
             flush_input()
             click_to_return()
 

@@ -100,7 +100,6 @@ class SuperAdminService(SystemAdminService):
                     break
 
             rows_deleted = cursor.rowcount
-            conn.close()
 
             if rows_deleted:
                 log_to_db({"username": self.session.user, "activity": "Revoked a Restore code", "additional_info": f"Revoked code '{code_to_delete}'", "suspicious": 0})
