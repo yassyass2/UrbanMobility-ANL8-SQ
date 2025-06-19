@@ -8,6 +8,33 @@ else:
     import termios
     import tty
 
+
+def kbhit():
+    import sys
+    if sys.platform == "win32":
+        import msvcrt
+        return msvcrt.kbhit()
+    else:
+        import select
+        return select.select([sys.stdin], [], [], 0)[0] != []
+
+def getch():
+    import sys
+    if sys.platform == "win32":
+        import msvcrt
+        return msvcrt.getch()
+    else:
+        import tty
+        import termios
+        import sys
+        fd = sys.stdin.fileno()
+        old = termios.tcgetattr(fd)
+        try:
+            tty.setraw(fd)
+            return sys.stdin.read(1)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)
+
 t = TextColors
 
 
@@ -16,18 +43,18 @@ def clear():
 
 
 def flush_input():
-    while msvcrt.kbhit():
-        msvcrt.getch()
+    while kbhit():
+        getch()
 
 
 def click_to_return():
     print(f"\n{t.blue}press any key to return to menu...{t.end}")
-    msvcrt.getch()
+    getch()
 
 
 def click_to_renew_session():
     print(f"\n{t.blue}press any key to return to create a new session...{t.end}")
-    msvcrt.getch()
+    getch()
 
 
 def navigate_menu(options):
