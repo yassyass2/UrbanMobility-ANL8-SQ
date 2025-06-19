@@ -2,7 +2,6 @@ import sqlite3
 from cryptography.fernet import Fernet
 from datetime import datetime
 import os
-from tabulate import tabulate
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -60,7 +59,14 @@ def view_logs(session, only_unviewed=False, db_path: str = "data/urban_mobility.
                 logs_to_update.append(row[0])
 
         if decrypted_logs:
-            print(tabulate(decrypted_logs, headers=column_names, tablefmt="fancy_grid"))
+            col_widths = [max(len(str(row[i])) for row in [column_names] + decrypted_logs) for i in range(len(column_names))]
+
+            header = " | ".join(str(name).ljust(col_widths[i]) for i, name in enumerate(column_names))
+            print(header)
+            print("-" * len(header))
+
+            for row in decrypted_logs:
+                print(" | ".join(str(item).ljust(col_widths[i]) for i, item in enumerate(row)))
         elif not only_unviewed:
             print("No logs to display.")
         else:
