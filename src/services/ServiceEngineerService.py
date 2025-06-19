@@ -87,20 +87,37 @@ class ServiceEngineerService():
     def search_scooter_by_id(self, scooter_id):
         if not self.session.is_valid():
             log_to_db({"username": self.session.user, "activity": "Tried to search scooter", "additional_info": "Expired session", "suspicious": 0})
-            print("session expired")
+            print("Session expired")
             return
 
-        # Connect to the database
-        conn = sqlite3.connect('data/urban_mobility.db')
+        cipher = Fernet(os.getenv("FERNET_KEY").encode())
+        conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
 
         try:
             cursor.execute("SELECT * FROM scooters WHERE id LIKE ?", (f"%{scooter_id}%",))
             scooters = cursor.fetchall()
+
             if scooters:
                 print("Scooters found:")
-                for scooter in scooters:
-                    print(scooter)
+                fields = [
+                    "id", "brand", "model", "serial_number", "top_speed",
+                    "battery_capacity", "soc", "target_range_soc", "location",
+                    "out_of_service", "mileage", "last_maintenance", "in_service"
+                ]
+                for s in scooters:
+                    scooter = dict(zip(fields, s))
+
+                    for field in ["serial_number", "location"]:
+                        try:
+                            if scooter[field]:
+                                scooter[field] = cipher.decrypt(scooter[field].encode()).decode()
+                        except Exception:
+                            scooter[field] = "[DECRYPTION FAILED]"
+
+                    for key, value in scooter.items():
+                        print(f"{key.replace('_', ' ').title()}: {value}")
+                    print("-" * 40)
             else:
                 print(f"No scooter found with ID containing '{scooter_id}'.")
         except sqlite3.Error as e:
@@ -114,18 +131,38 @@ class ServiceEngineerService():
             log_to_db({"username": self.session.user, "activity": "Tried to search scooter", "additional_info": "Expired session", "suspicious": 0})
             print("Session expired")
             return
-        
-        conn = sqlite3.connect('data/urban_mobility.db')
+
+        cipher = Fernet(os.getenv("FERNET_KEY").encode())
+        conn = sqlite3.connect(DB_FILE)
         cursor = conn.cursor()
 
         try:
             cursor.execute("SELECT * FROM scooters WHERE brand LIKE ?", (f"%{scooter_name}%",))
             scooters = cursor.fetchall()
+
             if scooters:
-                print(f"Scooters found:")
-                for scooter in scooters:
-                    print(scooter)
-            else: 
+                print("Scooters found:")
+                fields = [
+                    "id", "brand", "model", "serial_number", "top_speed",
+                    "battery_capacity", "soc", "target_range_soc", "location",
+                    "out_of_service", "mileage", "last_maintenance", "in_service"
+                ]
+                for s in scooters:
+                    scooter = dict(zip(fields, s))
+
+                    # Decrypt sensitive fields
+                    for field in ["serial_number", "location"]:
+                        try:
+                            if scooter[field]:
+                                scooter[field] = cipher.decrypt(scooter[field].encode()).decode()
+                        except Exception:
+                            scooter[field] = "[DECRYPTION FAILED]"
+
+                    # Print formatted output
+                    for key, value in scooter.items():
+                        print(f"{key.replace('_', ' ').title()}: {value}")
+                    print("-" * 40)
+            else:
                 print(f"No scooter found containing name: {scooter_name}.")
         except sqlite3.Error as e:
             print(f"Database error: {e}")
@@ -133,30 +170,52 @@ class ServiceEngineerService():
             log_to_db({"username": self.session.user, "activity": "Searched for scooters by name", "additional_info": "", "suspicious": 0})
             conn.close()
 
-
     def update_scooter(self, scooter_id: int, to_update: dict):
         if not self.session.is_valid() or self.session.role not in ["service_engineer", "system_admin", "super_admin"]:
             log_to_db({"username": self.session.user, "activity": "Tried to update scooter", "additional_info": "Expired session", "suspicious": 0})
             return "Fail, Session expired" if not self.session.is_valid() else "Must be at least service engineer to perform this action."
+
         if not to_update:
-            log_to_db({"username": self.session.user, "activity": "Tried to change password", "additional_info": "no fields provided.", "suspicious": 0})
+            log_to_db({"username": self.session.user, "activity": "Tried to update scooter", "additional_info": "No fields provided", "suspicious": 0})
             return "No fields provided to update."
 
-        fields_query = ", ".join(f"{field} = ?" for field in to_update)
-        new_values = list(to_update.values())
+        cipher = Fernet(os.getenv("FERNET_KEY").encode())
+        encrypted_fields = {"serial_number", "location"}
 
         try:
-            with sqlite3.connect('data/urban_mobility.db') as conn:
+            with sqlite3.connect(DB_FILE) as conn:
                 cursor = conn.cursor()
-                query = f"UPDATE scooters SET {fields_query} WHERE id = ?"
-                cursor.execute(query, new_values + [scooter_id])
-                conn.commit()
 
-                if cursor.rowcount == 0:
+                # Controleer of scooter bestaat
+                cursor.execute("SELECT 1 FROM scooters WHERE id = ?", (scooter_id,))
+                exists = cursor.fetchone()
+                if not exists:
                     print(f"No scooter found with ID {scooter_id}.")
                     return False
+
+                # Encrypt gevoelige velden indien aanwezig
+                for field in encrypted_fields:
+                    if field in to_update:
+                        try:
+                            to_update[field] = cipher.encrypt(to_update[field].encode()).decode('utf-8')
+                        except Exception as e:
+                            return f"Encryption failed for '{field}': {e}"
+
+                # Query bouwen en uitvoeren
+                fields_query = ", ".join(f"{field} = ?" for field in to_update)
+                values = list(to_update.values())
+
+                query = f"UPDATE scooters SET {fields_query} WHERE id = ?"
+                cursor.execute(query, values + [scooter_id])
+                conn.commit()
+
                 print(f"Scooter with ID {scooter_id} updated successfully.")
-                log_to_db({"username": self.session.user, "activity": "Updated a scooter.", "additional_info": f"Scooter with ID {scooter_id} updated successfully.", "suspicious": 0})
+                log_to_db({
+                    "username": self.session.user,
+                    "activity": "Updated a scooter.",
+                    "additional_info": f"Scooter with ID {scooter_id} updated successfully.",
+                    "suspicious": 0
+                })
                 return True
 
         except sqlite3.Error as e:

@@ -720,36 +720,54 @@ class SystemAdminService(ServiceEngineerService):
             log_to_db({"username": self.session.user, "activity": "Tried to add scooter", "additional_info": "Not an admin", "suspicious": 1})
             return False
 
-        with sqlite3.connect(DB_FILE) as conn:
-            cursor = conn.cursor()
-            cursor.execute('''
-                INSERT INTO scooters (
-                    brand, model, serial_number, top_speed, battery_capacity, soc, target_range_soc, location, out_of_service, mileage, last_maintenance, in_service
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)
-            ''', (
-                scooter_data["brand"],
-                scooter_data["model"],
-                scooter_data["serial_number"],
-                scooter_data["top_speed"],
-                scooter_data["battery_capacity"],
-                scooter_data["soc"],
-                scooter_data["target_range_soc"],
-                scooter_data["location"],
-                scooter_data["out_of_service"],
-                scooter_data["mileage"],
-                scooter_data["last_maintenance"],
-                scooter_data["in_service"]
-            ))
-            conn.commit()
-            print("New scooter ID:", cursor.lastrowid)
-            log_to_db({"username": self.session.user, "activity": "Added a scooter", "additional_info": f"Serial N0: {scooter_data['serial_number']}", "suspicious": 0})
-        return True
+        cipher = Fernet(os.getenv("FERNET_KEY").encode())
+
+        try:
+            encrypted_serial = cipher.encrypt(scooter_data["serial_number"].encode()).decode('utf-8')
+            encrypted_location = cipher.encrypt(scooter_data["location"].encode()).decode('utf-8')
+
+            with sqlite3.connect(DB_FILE) as conn:
+                cursor = conn.cursor()
+                cursor.execute('''
+                    INSERT INTO scooters (
+                        brand, model, serial_number, top_speed, battery_capacity,
+                        soc, target_range_soc, location, out_of_service,
+                        mileage, last_maintenance, in_service
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ''', (
+                    scooter_data["brand"],
+                    scooter_data["model"],
+                    encrypted_serial,
+                    scooter_data["top_speed"],
+                    scooter_data["battery_capacity"],
+                    scooter_data["soc"],
+                    scooter_data["target_range_soc"],
+                    encrypted_location,
+                    scooter_data["out_of_service"],
+                    scooter_data["mileage"],
+                    scooter_data["last_maintenance"],
+                    scooter_data["in_service"]
+                ))
+                conn.commit()
+                print("New scooter ID:", cursor.lastrowid)
+                log_to_db({
+                    "username": self.session.user,
+                    "activity": "Added a scooter",
+                    "additional_info": f"Encrypted serial number added",
+                    "suspicious": 0
+                })
+            return True
+        except Exception as e:
+            print(f"[ERROR] Failed to add scooter: {e}")
+            return False
 
     def delete_scooter(self) -> bool:
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
             print("Unauthorized or session expired.")
             log_to_db({"username": self.session.user, "activity": "tried to delete scooter", "additional_info": "not an admin", "suspicious": 1})
             return False
+
+        cipher = Fernet(os.getenv("FERNET_KEY").encode())
 
         log_to_db({"username": self.session.user, "activity": "Deleted a scooter", "additional_info": "Success", "suspicious": 0})
         with sqlite3.connect(DB_FILE) as conn:
@@ -763,7 +781,16 @@ class SystemAdminService(ServiceEngineerService):
 
             print("====== DELETE A SCOOTER ======")
             for s in scooters:
-                print(f"[SCOOTER] ID: {s[0]} | Brand: {s[1]} | Model: {s[2]} | Location: {s[3]} | Out of Service: {bool(s[4])}")
+                scooter_id = s[0]
+                brand = s[1]
+                model = s[2]
+                try:
+                    location = cipher.decrypt(s[3].encode()).decode()
+                except Exception:
+                    location = "[DECRYPTION FAILED]"
+                out_of_service = bool(s[4])
+
+                print(f"[SCOOTER] ID: {scooter_id} | Brand: {brand} | Model: {model} | Location: {location} | Out of Service: {out_of_service}")
 
             scooter_id_input = input("\nEnter the ID of the scooter to delete: ").strip()
             if not scooter_id_input.isdigit():
