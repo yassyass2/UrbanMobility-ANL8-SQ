@@ -9,7 +9,8 @@ def main():
     load_dotenv()
     clear()
 
-    # initialize_database()
+    # initialized database als hij niet bestaat
+    initialize_database()
 
     start_interface()
 
