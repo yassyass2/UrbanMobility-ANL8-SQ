@@ -373,7 +373,7 @@ class SystemAdminService(ServiceEngineerService):
                 print("Mobile must be exactly 8 digits.")
 
             while True:
-                license_number = input("Driving license (e.g. 1234567890): ").strip().upper()
+                license_number = input("Driving license (e.g. XX1234567 or X12345678): ").strip().upper()
                 if is_valid_license(license_number): break
                 print("Invalid license number format.")
 
