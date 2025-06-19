@@ -18,6 +18,7 @@ from datetime import date, datetime
 from ui.menu_utils import *
 from services.validation import *
 from logger import log_to_db
+from ui.prompts.user_prompts import *
 
 from cryptography.fernet import Fernet
 from datetime import date, datetime
@@ -124,7 +125,7 @@ class SystemAdminService(ServiceEngineerService):
             return "Fail, Session expired" if not self.session.is_valid() else f"Insufficient permissions to update user of role {role}"
         
         if not to_update:
-            log_to_db({"username": self.session.user, "activity": "Failed attempt to delete user", "additional_info": f"No fields provided", "suspicious": 0})
+            log_to_db({"username": self.session.user, "activity": "Failed attempt to update user", "additional_info": f"No fields provided", "suspicious": 0})
             return "No fields provided to update."
         
         if "password_hash" in to_update.keys():
@@ -153,6 +154,43 @@ class SystemAdminService(ServiceEngineerService):
 
                 log_to_db({"username": self.session.user, "activity": f"Updated user with id {id}", "additional_info": f"", "suspicious": 0})
                 return "User updated successfully."
+
+        except sqlite3.Error as e:
+            return f"Database error: {e}"
+        
+    def update_own_account(self):
+
+        if not self.session.is_valid() or self.session.role != "system_admin":
+            log_to_db({"username": self.session.user, "activity": "Unauthorized attempt to update own account", "additional_info": "Not a System admin", "suspicious": 1})
+            return "Fail, Session expired" if not self.session.is_valid() else f"Only system admins can update own account"
+        
+        with sqlite3.connect(DB_FILE) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT id FROM users WHERE username_hash = ?", (hashlib.sha256(self.session.user.encode()).hexdigest(),))
+            own_id = cursor.fetchone()[0]
+
+        to_update = prompt_update_self(own_id)
+
+        if "username" in to_update.keys():
+            cipher = Fernet(os.getenv("FERNET_KEY").encode())
+            plain_uname = to_update["username"]
+
+            to_update["username_hash"] = hashlib.sha256(plain_uname.encode()).hexdigest()
+            to_update["username"] = cipher.encrypt(to_update["username"].encode('utf-8')).decode('utf-8')
+
+        fields_query = ", ".join(f"{field} = ?" for field in to_update)
+        new_values = list(to_update.values())
+
+        try:
+            with sqlite3.connect(DB_FILE) as conn:
+                cursor = conn.cursor()
+
+                query = f"UPDATE users SET {fields_query} WHERE id = ?"
+                cursor.execute(query, new_values + [own_id])
+                conn.commit()
+
+                log_to_db({"username": self.session.user, "activity": f"Updated their own account", "additional_info": f"Success", "suspicious": 0})
+                return "Own account updated successfully."
 
         except sqlite3.Error as e:
             return f"Database error: {e}"

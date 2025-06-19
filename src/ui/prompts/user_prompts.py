@@ -51,6 +51,29 @@ def prompt_update_user(id, role_options):
 
     return updates
 
+def prompt_update_self(id):
+    fields = ["First Name", "Last Name", "Username"]
+    print(f"Update fields for your profile: \n")
+    for i, field in enumerate(fields, 1):
+        print(f"{i}. {field}")
+
+    numbers_csv = input("Enter number(s) of fields to update (comma-separated): ").strip()
+    while not is_valid_number_selection(numbers_csv):
+        print(f"Update fields for user: \n")
+        for i, field in enumerate(fields, 1):
+            print(f"{i}. {field}")
+        numbers_csv = input("Invalid format for fields to update. input numbers seperated by , like (1,2,3)")
+    
+    updates = {}
+    if "1" in numbers_csv:
+        updates["first_name"] = prompt_first_name("Enter new First name: ")
+    if "2" in numbers_csv:
+        updates["last_name"] = prompt_last_name("Enter new Last name: ")
+    if "3" in numbers_csv:
+        updates["username"] = prompt_username("Enter new username: ")
+
+    return updates
+
 
 def is_valid_number_selection(numbers: str) -> list:
     numbers = numbers.strip()
