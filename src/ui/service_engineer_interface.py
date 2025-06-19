@@ -28,8 +28,8 @@ def service_engineer_interface(session: Session):
 
         elif choice == "Search Scooter":
             while True:
-                menu_options = ["Search By ID", "Search By Name", "Back"]
-                choice = navigate_menu(menu_options)
+                menu_options_s = ["Search By ID", "Search By Name", "Back"]
+                choice = navigate_menu(menu_options_s)
 
                 if choice == "Search By ID":
                     clear()
@@ -48,7 +48,7 @@ def service_engineer_interface(session: Session):
                 elif choice == "Back":
                     clear()
                     flush_input()
-                    return
+                    break
 
         elif choice == "Exit":
             flush_input()

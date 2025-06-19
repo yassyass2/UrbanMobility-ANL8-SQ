@@ -210,8 +210,8 @@ def traveller_operations_menu(super_admin_service):
 
         elif choice == "View Travellers":
             while True:
-                menu_options = ["Search By ID", "Search By Last Name", "Back"]
-                choice = navigate_menu(menu_options)
+                menu_options_s = ["Search By ID", "Search By Last Name", "Back"]
+                choice = navigate_menu(menu_options_s)
 
                 if choice == "Search By ID":
                     clear()
@@ -230,7 +230,7 @@ def traveller_operations_menu(super_admin_service):
                 elif choice == "Back":
                         clear()
                         flush_input()
-                        return
+                        break
 
         elif choice == "Back":
             clear()
@@ -270,8 +270,8 @@ def scooter_operations_menu(super_admin_service):
 
         elif choice == "Search Scooter":
             while True:
-                menu_options = ["Search By ID", "Search By Name", "Back"]
-                choice = navigate_menu(menu_options)
+                menu_options_s = ["Search By ID", "Search By Name", "Back"]
+                choice = navigate_menu(menu_options_s)
 
                 if choice == "Search By ID":
                     clear()
@@ -290,8 +290,8 @@ def scooter_operations_menu(super_admin_service):
                 elif choice == "Back":
                     clear()
                     flush_input()
-                    return
-                
+                    break
+
         elif choice == "Back":
             clear()
             flush_input()
