@@ -167,6 +167,9 @@ class SystemAdminService(ServiceEngineerService):
             own_id = cursor.fetchone()[0]
 
         to_update = prompt_update_self(own_id)
+        if not to_update:
+            log_to_db({"username": self.session.user, "activity": "Failed attempt to update own account", "additional_info": "No fields provided", "suspicious": 0})
+            return "No fields provided to update."
 
         if "username" in to_update.keys():
             cipher = Fernet(os.getenv("FERNET_KEY").encode())
@@ -649,7 +652,7 @@ class SystemAdminService(ServiceEngineerService):
                 ]
                 encrypted_keys = {
                     "first_name", "last_name", "birthday", "gender",
-                    "street", "zip_code", "city", "email", "mobile", "license_number"
+                    "street", "house_number" ,"zip_code", "city", "email", "mobile", "license_number"
                 }
 
                 for row in travellers:
@@ -696,7 +699,7 @@ class SystemAdminService(ServiceEngineerService):
                 ]
                 encrypted_keys = {
                     "first_name", "last_name", "birthday", "gender",
-                    "street", "zip_code", "city", "email", "mobile", "license_number"
+                    "street","house_number", "zip_code", "city", "email", "mobile", "license_number"
                 }
 
                 for row in travellers:

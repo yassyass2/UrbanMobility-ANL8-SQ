@@ -186,14 +186,12 @@ class ServiceEngineerService():
             with sqlite3.connect(DB_FILE) as conn:
                 cursor = conn.cursor()
 
-                # Controleer of scooter bestaat
                 cursor.execute("SELECT 1 FROM scooters WHERE id = ?", (scooter_id,))
                 exists = cursor.fetchone()
                 if not exists:
                     print(f"No scooter found with ID {scooter_id}.")
                     return False
 
-                # Encrypt gevoelige velden indien aanwezig
                 for field in encrypted_fields:
                     if field in to_update:
                         try:
@@ -201,7 +199,6 @@ class ServiceEngineerService():
                         except Exception as e:
                             return f"Encryption failed for '{field}': {e}"
 
-                # Query bouwen en uitvoeren
                 fields_query = ", ".join(f"{field} = ?" for field in to_update)
                 values = list(to_update.values())
 

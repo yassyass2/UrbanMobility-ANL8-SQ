@@ -60,7 +60,7 @@ def prompt_update_self(id):
         print(f"Update fields for user: \n")
         for i, field in enumerate(fields, 1):
             print(f"{i}. {field}")
-        numbers_csv = input("Invalid format for fields to update. input numbers seperated by , like (1,2,3)")
+        numbers_csv = input("Invalid format for fields to update. input numbers seperated by, like (1,2,3): ")
     
     updates = {}
     if "1" in numbers_csv:
@@ -69,7 +69,10 @@ def prompt_update_self(id):
         updates["last_name"] = prompt_last_name("Enter new Last name: ")
     if "3" in numbers_csv:
         updates["username"] = prompt_username("Enter new username: ")
-
+    if "1" not in numbers_csv and "2" not in numbers_csv and "3" not in numbers_csv:
+        print("No fields selected for update.")
+        click_to_return()
+        return None
     return updates
 
 

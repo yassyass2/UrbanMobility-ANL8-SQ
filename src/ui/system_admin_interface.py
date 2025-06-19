@@ -127,7 +127,7 @@ def account_settings_menu(system_admin_service):
         elif choice == "Update Your Profile":
             clear()
             flush_input()
-            system_admin_service.update_own_account()
+            print(system_admin_service.update_own_account())
             flush_input()
             click_to_return()
 
