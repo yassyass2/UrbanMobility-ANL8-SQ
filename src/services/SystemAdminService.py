@@ -312,7 +312,7 @@ class SystemAdminService(ServiceEngineerService):
                             conn.commit()
                             break
 
-                log_to_db({"username": self.session.user, "activity": "Succesfully restored backup with code", "additional_info": f"", "suspicious": 0})
+                log_to_db({"username": self.session.user, "activity": "Succesfully restored backup with code", "additional_info": "success", "suspicious": 0})
                 return f"Backup {backup} Restored, code {plain_code} No longer usable"
 
             except Exception as e:
@@ -324,7 +324,7 @@ class SystemAdminService(ServiceEngineerService):
                 shutil.rmtree(TEMP_EXTRACT_PATH, ignore_errors=True)
         else:
             log_to_db({"username": self.session.user, "activity": "Tried to restore a backup with code", "additional_info": f"Is not an admin", "suspicious": 1})
-            return "Fail, Session expired" if not self.session.is_valid() else "Must be super admin to perform this action."
+            return "Fail, Session expired" if not self.session.is_valid() else "Must be admin to perform this action."
     
     def add_traveller(self) -> None:
         if self.session.is_valid() and self.session.role in ["super_admin", "system_admin"]:
