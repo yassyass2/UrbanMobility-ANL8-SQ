@@ -350,9 +350,8 @@ class SystemAdminService(ServiceEngineerService):
                 print("Street must contain only letters and spaces.")
 
             while True:
-                house_number_input = input("House number: ").strip()
-                if is_valid_house_number(house_number_input):
-                    house_number = int(house_number_input)
+                house_number = input("House number: ").strip()
+                if is_valid_house_number(house_number):
                     break
                 print("Invalid house number.")
 
@@ -397,6 +396,7 @@ class SystemAdminService(ServiceEngineerService):
                 "birthday": cipher.encrypt(birthday.encode()).decode('utf-8'),
                 "gender": cipher.encrypt(gender.encode()).decode('utf-8'),
                 "street": cipher.encrypt(street.encode()).decode('utf-8'),
+                "house_number": cipher.encrypt(house_number.encode()).decode('utf-8'),
                 "zip_code": cipher.encrypt(zip_code.encode()).decode('utf-8'),
                 "city": cipher.encrypt(city.encode()).decode('utf-8'),
                 "email": cipher.encrypt(email.encode()).decode('utf-8'),
@@ -419,7 +419,7 @@ class SystemAdminService(ServiceEngineerService):
                     encrypted_fields["birthday"],
                     encrypted_fields["gender"],
                     encrypted_fields["street"],
-                    house_number,
+                    encrypted_fields["house_number"],
                     encrypted_fields["zip_code"],
                     encrypted_fields["city"],
                     encrypted_fields["email"],
@@ -502,12 +502,6 @@ class SystemAdminService(ServiceEngineerService):
             "license_number": is_valid_license,
         }
 
-        # Alle velden behalve house_number zijn gevoelig en moeten versleuteld worden
-        encrypted_fields = {
-            "first_name", "last_name", "birthday", "gender", "street", "zip_code",
-            "city", "email", "mobile", "license_number"
-        }
-
         updated_data = {}
         cipher = Fernet(os.getenv("FERNET_KEY").encode())
 
@@ -519,8 +513,8 @@ class SystemAdminService(ServiceEngineerService):
             validator = validators.get(field)
             if validator and validator(new_value):
                 if field == "house_number":
-                    updated_data[field] = int(new_value)
-                elif field in encrypted_fields:
+                    updated_data[field] = cipher.encrypt(str(int(new_value)).encode()).decode('utf-8')
+                else:
                     updated_data[field] = cipher.encrypt(new_value.encode()).decode('utf-8')
             else:
                 print(f"Invalid input for {field.replace('_', ' ')}. Skipping.")
@@ -595,7 +589,7 @@ class SystemAdminService(ServiceEngineerService):
         except Exception as e:
             print(f"[ERROR] Failed to delete traveller: {e}")
     
-    # Wordt alleen gebruikt door update_user, dus geen logging nodig
+    # Wordt alleen gebruikt door update_traveller, dus geen logging nodig
     def get_traveller_by_id(self, traveller_id: int) -> dict | None:
         try:
             cipher = Fernet(os.getenv("FERNET_KEY").encode())
@@ -619,7 +613,7 @@ class SystemAdminService(ServiceEngineerService):
                 # Alle velden behalve id, house_number en registration_date moeten worden ontsleuteld
                 encrypted_keys = {
                     "first_name", "last_name", "birthday", "gender",
-                    "street", "zip_code", "city", "email", "mobile", "license_number"
+                    "street", "house_number" , "zip_code", "city", "email", "mobile", "license_number"
                 }
 
                 for key in encrypted_keys:
