@@ -35,7 +35,7 @@ def is_valid_mobile(mobile):
     return bool(re.fullmatch(r"\d{8}", mobile.strip()))
 
 def is_valid_license(license_number):
-    return bool(re.fullmatch(r"\d{10}", license_number.strip()))
+    return bool(re.fullmatch(r"[A-Za-z]{1,2}\d{7,8}", license_number.strip())) and len(license_number.strip()) == 9
 
 def is_valid_gender(value: str) -> bool:
     return value.strip().lower() in ["male", "female"]
@@ -89,6 +89,19 @@ def is_valid_number(number):
     except (ValueError, TypeError):
         return False
 
+def is_valid_model(model):
+    try:
+        model = model.strip()
+        if not model:
+            return False
+        if len(model) < 2 or len(model) > 30:
+            return False
+        if not re.match(r"^[A-Za-z0-9\s\-]+$", model):
+            return False
+        return True
+    except (ValueError, TypeError):
+        return False
+
 def is_valid_mileage(mileage):
     try:
         miles = float(mileage)
@@ -101,7 +114,7 @@ def is_valid_mileage(mileage):
 def is_valid_speed(speed):
     try:
         speed_value = float(speed)
-        if speed_value < 0 or speed_value > 100:
+        if speed_value < 1 or speed_value > 100:
             return False
         return True
     except (ValueError, TypeError):
@@ -110,7 +123,16 @@ def is_valid_speed(speed):
 def is_valid_capacity(capacity):
     try:
         capacity_value = float(capacity)
-        if capacity_value < 0 or capacity_value > 5000:
+        if capacity_value < 1 or capacity_value > 5000:
+            return False
+        return True
+    except (ValueError, TypeError):
+        return False
+    
+def is_valid_soc(soc):
+    try:
+        soc_value = float(soc)
+        if soc_value < 0 or soc_value > 100:
             return False
         return True
     except (ValueError, TypeError):
@@ -129,8 +151,10 @@ def is_valid_range_soc(range_soc):
     
 def is_valid_date_iso_8601(date: str) -> bool:
     try:
-        datetime.datetime.strptime(date, "%Y-%m-%d")
-        return True
+        date = datetime.datetime.strptime(date, "%Y-%m-%d").date()
+        today = datetime.date.today()
+        valid_date = (today - date).days / 365.25
+        return 0 < valid_date <= 99
     except ValueError:
         return False
 

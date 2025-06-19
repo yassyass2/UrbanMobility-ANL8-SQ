@@ -87,9 +87,9 @@ def prompt_brand(Prompt = "Enter a Brand: "):
 def prompt_model(Prompt = "Enter a Model: "):
     while True:
         model = input(Prompt).strip()
-        if is_valid_name(model):
+        if is_valid_model(model):
             return model
-        print("Invalid Model name")
+        print("Invalid Model name. Must be between 2 and 30 characters, alphanumeric and can include spaces, dashes, and underscores.")
 
 def prompt_serial_number(Prompt = "Enter a Serial Number (between 10-17 alphanumeric characters): "):
     while True:
@@ -103,19 +103,19 @@ def prompt_top_speed(Prompt = "Enter a Top Speed in kp/h: "):
         top_speed = input(Prompt).strip()
         if is_valid_speed(top_speed):
             return top_speed
-        print("Invalid Top Speed. Speed must be a number between 0 and 100.")
+        print("Invalid Top Speed. Speed must be a number between 1 and 100.")
 
-def prompt_capacity(Prompt = "Enter a Battery Capacity in Wh (0-5000): "):
+def prompt_capacity(Prompt = "Enter a Battery Capacity in Wh (1-5000): "):
     while True:
         capacity = input(Prompt).strip()
         if is_valid_capacity(capacity):
             return capacity
-        print("Invalid Capacity. Please enter a valid number.")
+        print("Invalid Capacity. Please enter a valid number between 1 and 5000.")
 
 def prompt_soc(Prompt = "Enter a State of Charge (battery percentage, between 0 and 100): "):
     while True:
         soc = input(Prompt).strip()
-        if is_valid_number(soc):
+        if is_valid_soc(soc):
             return soc
         print("Invalid State of Charge. Must be a number between 0 and 100.")
 
@@ -169,4 +169,4 @@ def prompt_last_maintenance(Prompt = "Choose Last Maintance date (yyyy-mm-dd): "
         last_maintenance = input(Prompt).strip()
         if is_valid_date_iso_8601(last_maintenance):
             return last_maintenance
-        print("Invalid Last Maintance Date. Please enter a valid date in the format yyyy-mm-dd.")
+        print(f"Invalid Last Maintance Date. Please enter a valid date in the format yyyy-mm-dd. Which is before {datetime.date.today()} and within the last 99 years.")
