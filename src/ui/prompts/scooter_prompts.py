@@ -56,7 +56,7 @@ def prompt_update_scooter(scooter_id: int, role: str):
 
     # Determine allowed fields based on role
     if role == "service_engineer":
-        allowed_indexes = list(range(5, 11))  
+        allowed_indexes = list(range(5, 12))  
         print("As a service engineer, you can only update the following fields:\n")
     elif role == "system_admin" or "super_admin":
         allowed_indexes = list(range(1, len(fields)+1))  # all fields
