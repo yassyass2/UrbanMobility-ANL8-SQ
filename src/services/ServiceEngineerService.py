@@ -127,7 +127,7 @@ class ServiceEngineerService():
             log_to_db({"username": self.session.user, "activity": "Searched for scooters by ID", "additional_info": "", "suspicious": 0})
             conn.close()
 
-    def search_scooter_by_name(self, scooter_name):
+    def search_scooter_by_brand(self, scooter_brand):
         if not self.session.is_valid():
             log_to_db({"username": self.session.user, "activity": "Tried to search scooter", "additional_info": "Expired session", "suspicious": 0})
             print("Session expired")
@@ -138,7 +138,7 @@ class ServiceEngineerService():
         cursor = conn.cursor()
 
         try:
-            cursor.execute("SELECT * FROM scooters WHERE brand LIKE ?", (f"%{scooter_name}%",))
+            cursor.execute("SELECT * FROM scooters WHERE brand LIKE ?", (f"%{scooter_brand}%",))
             scooters = cursor.fetchall()
 
             if scooters:
@@ -164,11 +164,11 @@ class ServiceEngineerService():
                         print(f"{key.replace('_', ' ').title()}: {value}")
                     print("-" * 40)
             else:
-                print(f"No scooter found containing name: {scooter_name}.")
+                print(f"No scooter found containing brand: {scooter_brand}.")
         except sqlite3.Error as e:
             print(f"Database error: {e}")
         finally:
-            log_to_db({"username": self.session.user, "activity": "Searched for scooters by name", "additional_info": "", "suspicious": 0})
+            log_to_db({"username": self.session.user, "activity": "Searched for scooters by brand", "additional_info": "", "suspicious": 0})
             conn.close()
 
     def update_scooter(self, scooter_id: int, to_update: dict):

@@ -284,14 +284,28 @@ def scooter_operations_menu(system_admin_service):
                     clear()
                     flush_input()
                     scooter_id = input("Enter scooter ID: ")
+
+                    if not is_valid_number(scooter_id):
+                        print("[ERROR] Invalid scooter ID. Must be a positive integer.")
+                        flush_input()
+                        click_to_return()
+                        return
+
                     system_admin_service.search_scooter_by_id(scooter_id)
                     click_to_return()
 
-                elif choice == "Search By Name":
+                elif choice == "Search By Brand":
                     clear()
                     flush_input()
-                    scooter_name = input("Enter scooter Name: ")
-                    system_admin_service.search_scooter_by_name(scooter_name)
+                    scooter_brand = input("Enter scooter Brand: ")
+
+                    if not is_valid_name(scooter_brand):
+                        print("[ERROR] Invalid scooter brand. Must be a non-empty string.")
+                        flush_input()
+                        click_to_return()
+                        return
+
+                    system_admin_service.search_scooter_by_brand(scooter_brand)
                     click_to_return()
 
                 elif choice == "Back":

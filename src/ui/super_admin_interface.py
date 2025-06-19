@@ -294,7 +294,7 @@ def scooter_operations_menu(super_admin_service):
 
         elif choice == "Search Scooter":
             while True:
-                menu_options_s = ["Search By ID", "Search By Name", "Back"]
+                menu_options_s = ["Search By ID", "Search By Brand", "Back"]
                 choice = navigate_menu(menu_options_s)
 
                 if choice == "Search By ID":
@@ -304,11 +304,18 @@ def scooter_operations_menu(super_admin_service):
                     super_admin_service.search_scooter_by_id(scooter_id)
                     click_to_return()
 
-                elif choice == "Search By Name":
+                elif choice == "Search By Brand":
                     clear()
                     flush_input()
-                    scooter_name = input("Enter scooter Name: ")
-                    super_admin_service.search_scooter_by_name(scooter_name)
+                    scooter_brand = input("Enter scooter Brand: ")
+
+                    if not is_valid_name(scooter_brand):
+                        print("[ERROR] Invalid scooter brand. Must be a non-empty string.")
+                        flush_input()
+                        click_to_return()
+                        return
+                    
+                    super_admin_service.search_scooter_by_brand(scooter_brand)
                     click_to_return()
 
                 elif choice == "Back":
