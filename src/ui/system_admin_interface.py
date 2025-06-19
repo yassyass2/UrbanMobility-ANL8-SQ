@@ -250,6 +250,7 @@ def scooter_operations_menu(system_admin_service):
         elif choice == "Update Scooter":
             clear()
             flush_input()
+            system_admin_service.get_scooter_list()
             scooter_id = input("Enter a scooter id to update: ")
             
             if not is_valid_number(scooter_id):

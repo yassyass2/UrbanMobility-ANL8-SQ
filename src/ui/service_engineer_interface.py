@@ -21,6 +21,7 @@ def service_engineer_interface(session: Session):
         elif choice == "Update Scooters":
             clear()
             flush_input()
+            service_engineer_service.get_scooter_list()
             scooter_id = input("Enter a scooter id to update: ")
 
             if not is_valid_number(scooter_id):
