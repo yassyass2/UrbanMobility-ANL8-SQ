@@ -3,6 +3,7 @@ from services.ServiceEngineerService import ServiceEngineerService
 from models.Session import Session
 from ui.menu_utils import navigate_menu, flush_input, clear, click_to_return
 from ui.prompts.scooter_prompts import *
+from services.validation import is_valid_number
 
 
 def service_engineer_interface(session: Session):
@@ -21,6 +22,20 @@ def service_engineer_interface(session: Session):
             clear()
             flush_input()
             scooter_id = input("Enter a scooter id to update: ")
+
+            if not is_valid_number(scooter_id):
+                print("[ERROR] Invalid scooter ID. Must be a positive integer.")
+                flush_input()
+                click_to_return()
+                return
+
+            scooter = service_engineer_service.get_scooter_by_id(scooter_id)
+            if not scooter:
+                print(f"No scooter found with ID: {scooter_id}")
+                flush_input()
+                click_to_return()
+                return
+            
             fields_to_update = prompt_update_scooter(scooter_id, session.role)
             service_engineer_service.update_scooter(scooter_id, fields_to_update)
             click_to_return()

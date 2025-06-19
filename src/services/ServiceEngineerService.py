@@ -8,6 +8,7 @@ from cryptography.fernet import Fernet
 from ui.prompts.field_prompts import input_password
 from ui.menu_utils import clear
 from logger import *
+from services.validation import is_valid_number
 
 DB_FILE = 'data/urban_mobility.db'
 
@@ -217,3 +218,35 @@ class ServiceEngineerService():
 
         except sqlite3.Error as e:
             return f"Database error: {e}"
+
+    def get_scooter_by_id(self, scooter_id: int) -> dict | None:
+
+        try:
+            cipher = Fernet(os.getenv("FERNET_KEY").encode())
+
+            with sqlite3.connect(DB_FILE) as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM scooters WHERE id = ?", (scooter_id,))
+                row = cursor.fetchone()
+
+                if not row:
+                    return None
+
+                fields = [
+                    "id", "brand", "model", "serial_number", "top_speed",
+                    "battery_capacity", "soc", "target_range_soc", "location",
+                    "out_of_service", "mileage", "last_maintenance", "in_service"
+                ]
+
+                decrypted = dict(zip(fields, row))
+
+                encrypted_keys = {"serial_number", "location"}
+
+            for key in encrypted_keys:
+                if decrypted[key]:
+                    decrypted[key] = cipher.decrypt(decrypted[key].encode()).decode()
+
+            return decrypted
+        except Exception as e:
+            print(f"[ERROR] Failed to load scooter: {e}")
+            return None

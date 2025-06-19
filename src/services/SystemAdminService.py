@@ -939,3 +939,31 @@ class SystemAdminService(ServiceEngineerService):
 
         except Exception as e:
             print(f"[ERROR] Failed to delete account: {e}")
+
+    def get_user_by_id(self, user_id: int) -> dict | None:
+        try:
+            cipher = Fernet(os.getenv("FERNET_KEY").encode())
+
+            with sqlite3.connect(DB_FILE) as conn:
+                cursor = conn.cursor()
+                cursor.execute("SELECT * FROM users WHERE id = ?", (user_id,))
+                row = cursor.fetchone()
+
+                if not row:
+                    return None
+
+                fields = [
+                    "id", "username", "password_hash", "role", "first_name",
+                    "last_name", "registration_date", "username_hash", "must_change_password"
+                ]
+
+                decrypted = dict(zip(fields, row))
+
+                # Only username is encrypted
+                if decrypted["username"]:
+                    decrypted["username"] = cipher.decrypt(decrypted["username"].encode()).decode()
+
+                return decrypted
+        except Exception as e:
+            print(f"[ERROR] Failed to load user: {e}")
+            return None

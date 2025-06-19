@@ -79,6 +79,14 @@ def user_menu(user_service):
 
         elif choice == "Modify User":
             id_to_update = user_selection_screen(user_service, "MODIFY")
+            
+            user = user_service.get_user_by_id(id_to_update)
+            if not user:
+                print(f"No user found with ID: {id_to_update}")
+                flush_input()
+                click_to_return()
+                return
+
             fields_to_update = prompt_update_user(id_to_update, ["service_engineer"])
             print(user_service.update_user(id_to_update, fields_to_update))
             click_to_return()
@@ -243,6 +251,20 @@ def scooter_operations_menu(system_admin_service):
             clear()
             flush_input()
             scooter_id = input("Enter a scooter id to update: ")
+            
+            if not is_valid_number(scooter_id):
+                print("[ERROR] Invalid scooter ID. Must be a positive integer.")
+                flush_input()
+                click_to_return()
+                return
+            
+            scooter = system_admin_service.get_scooter_by_id(scooter_id)
+            if not scooter:
+                print(f"No scooter found with ID: {scooter_id}")
+                flush_input()
+                click_to_return()
+                return
+  
             fields_to_update = prompt_update_scooter(scooter_id, system_admin_service.session.role)
             system_admin_service.update_scooter(scooter_id, fields_to_update)
             click_to_return()
