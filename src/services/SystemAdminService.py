@@ -257,8 +257,11 @@ class SystemAdminService(ServiceEngineerService):
         if not self.session.is_valid() or self.session.role not in ["system_admin", "super_admin"]:
             log_to_db({"username": self.session.user, "activity": "Tried to restore a backup with code", "additional_info": f"Is not an admin", "suspicious": 1})
             return "Fail, Session expired" if not self.session.is_valid() else "Must be super admin to perform this action."
+        cipher = Fernet(os.getenv("FERNET_KEY").encode())
+        backup = cipher.decrypt(code[1].encode()).decode()
+        plain_code = cipher.decrypt(code[0].encode()).decode()
         
-        backup_path = os.path.join(BACKUP_DIR, code[1])
+        backup_path = os.path.join(BACKUP_DIR, backup)
         with sqlite3.connect(DB_FILE) as conn:
             cursor = conn.cursor()
             cursor.execute("SELECT id FROM users WHERE username_hash = ?", (hashlib.sha256(self.session.user.encode()).hexdigest(),))
@@ -268,7 +271,7 @@ class SystemAdminService(ServiceEngineerService):
 
         if not os.path.exists(backup_path):
             log_to_db({"username": self.session.user, "activity": "Tried to restore backup", "additional_info": "no such backup", "suspicious": 0})
-            return f"Backup file '{code[1]}' not found."
+            return f"Backup file '{backup}' not found."
 
         try:
             os.makedirs(TEMP_EXTRACT_PATH, exist_ok=True)
@@ -287,11 +290,18 @@ class SystemAdminService(ServiceEngineerService):
 
             with sqlite3.connect(DB_FILE) as conn:
                 cursor = conn.cursor()
-                cursor.execute("DELETE FROM restore_codes WHERE code = ?", (code[0],))
-                conn.commit()
+                cursor.execute("SELECT code FROM restore_codes")
+                rows = cursor.fetchall()
+
+                for row in rows:
+                    decrypted_code = cipher.decrypt(row[0].encode()).decode()
+                    if decrypted_code == plain_code:
+                        cursor.execute("DELETE FROM restore_codes WHERE code = ?", (row[0],))
+                        conn.commit()
+                        break
 
             log_to_db({"username": self.session.user, "activity": "Succesfully restored backup with code", "additional_info": f"", "suspicious": 0})
-            return f"Backup {code[1]} Restored, code {code[0]} No longer usable"
+            return f"Backup {backup} Restored, code {plain_code} No longer usable"
 
         except Exception as e:
             log_to_db({"username": self.session.user, "activity": "Tried to restore a backup with code", "additional_info": "Database error", "suspicious": 0})
@@ -837,6 +847,8 @@ class SystemAdminService(ServiceEngineerService):
                 return False
             print("There are no restore codes.")
             return False
+        
+        cipher = Fernet(os.getenv("FERNET_KEY").encode())
 
         if sys:
             print("\n--- Your personal restore codes ---")
@@ -844,8 +856,8 @@ class SystemAdminService(ServiceEngineerService):
             print("\n--- ALL RESTORE CODES ---\n")
         for row in records:
             code, backup_filename, admin_id, used, date_created = row
-            print(f"Code: {code}")
-            print(f"  Backup File: {backup_filename}")
+            print(f"Code: {cipher.decrypt(code.encode()).decode()}")
+            print(f"  Backup File: {cipher.decrypt(backup_filename.encode()).decode()}")
             print(f"  Super admin ID:    {admin_id}")
             print(f"  Used:        {used}")
             print(f"  Date Created:{date_created}")
@@ -930,18 +942,3 @@ class SystemAdminService(ServiceEngineerService):
 
         except Exception as e:
             print(f"[ERROR] Failed to delete account: {e}")
-
-    def view_all_backups(self):
-        if not self.session.is_valid() or self.session.role not in ["super_admin"]:
-            log_to_db({"username": self.session.user, "activity": "Tried to view all backups", "additional_info": "Not a super admin", "suspicious": 1})
-            return "Fail, Session expired" if not self.session.is_valid() else "Fail, Must be super admin to perform this action."
-
-        if not os.path.exists(BACKUP_DIR):
-            return []
-
-        backups = [
-            filename for filename in os.listdir(BACKUP_DIR)
-            if filename.endswith(".zip") and os.path.isfile(os.path.join(BACKUP_DIR, filename))
-        ]
-
-        return sorted(backups)

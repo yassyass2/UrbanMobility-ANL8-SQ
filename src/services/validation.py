@@ -3,6 +3,7 @@ import datetime
 import sqlite3
 import hashlib
 from ui.menu_utils import *
+from cryptography.fernet import Fernet
 
 USERNAME_REGEX = re.compile(r"^[a-z_][a-z0-9_'.]{7,9}$", re.IGNORECASE)
 
@@ -172,8 +173,17 @@ def validate_restore_code(code_username):
 
     cursor.execute("SELECT id FROM users WHERE username_hash = ?", (hashlib.sha256(code_username.encode()).hexdigest(),))
     belong_id = cursor.fetchone()[0]
-    cursor.execute("SELECT * FROM restore_codes WHERE code = ? AND system_admin_id = ?", (code, belong_id))
-    result = cursor.fetchone()
+
+    cipher = Fernet(os.getenv("FERNET_KEY").encode())
+    cursor.execute("SELECT code FROM restore_codes")
+    rows = cursor.fetchall()
+
+    for row in rows:
+        decrypted_code = cipher.decrypt(row[0].encode()).decode()
+        if decrypted_code == code:
+            cursor.execute("SELECT * FROM restore_codes WHERE code = ? AND system_admin_id = ?", (row[0], belong_id))
+            result = cursor.fetchone()
+            break
     conn.close()
 
     if result:
@@ -181,4 +191,6 @@ def validate_restore_code(code_username):
         return result
     else:
         print("Restore code not found.")
+        flush_input()
+        click_to_return()
         return None

@@ -58,6 +58,7 @@ class SuperAdminService(SystemAdminService):
             log_to_db({"username": self.session.user, "activity": "Unauthorized attempt to generate restore code", "additional_info": f"{self.session.user} has no super admin session.", "suspicious": 1})
             return "Fail, Session expired" if not self.session.is_valid() else "Must be super admin to perform this action."
 
+        cipher = Fernet(os.getenv("FERNET_KEY").encode())
         characters = string.ascii_uppercase + string.digits
         code = ''.join(secrets.choice(characters) for _ in range(12))
 
@@ -71,7 +72,7 @@ class SuperAdminService(SystemAdminService):
                 used,
                 created_at
             ) VALUES (?, ?, ?, ?, ?)
-            ''', (cipher.encrypt(code.encode('utf-8')).decode('utf-8'), cipher.encrypt(backup_file.encode('utf-8')).decode('utf-8'), admin_id,
+            ''', (cipher.encrypt(code.encode()).decode(), cipher.encrypt(backup_file.encode()).decode(), admin_id,
                   0, datetime.now().strftime('%Y-%m-%d')))
             
             conn.commit()
@@ -82,11 +83,21 @@ class SuperAdminService(SystemAdminService):
         if not self.session.is_valid() or self.session.role not in ["super_admin"]:
             log_to_db({"username": self.session.user, "activity": "tried to revoke restore code", "additional_info": f"{self.session.user} has no super admin session.", "suspicious": 1})
             return "Fail, Session expired" if not self.session.is_valid() else "Must be super admin to perform this action."
+        
 
         with sqlite3.connect(DB_FILE) as conn:
             cursor = conn.cursor()
-            cursor.execute("DELETE FROM restore_codes WHERE code = ?", (code_to_delete,))
-            conn.commit()
+
+            cursor.execute("SELECT code FROM restore_codes")
+            rows = cursor.fetchall()
+            cipher = Fernet(os.getenv("FERNET_KEY").encode())
+
+            for row in rows:
+                decrypted_code = cipher.decrypt(row[0].encode()).decode()
+                if decrypted_code == code_to_delete:
+                    cursor.execute("DELETE FROM restore_codes WHERE code = ?", (row[0],))
+                    conn.commit()
+                    break
 
             rows_deleted = cursor.rowcount
             conn.close()
@@ -97,3 +108,18 @@ class SuperAdminService(SystemAdminService):
             else:
                 log_to_db({"username": self.session.user, "activity": f"Tried to revoke restore code'{code_to_delete}'", "additional_info": "not found", "suspicious": 0})
                 return f"No restore code found for '{code_to_delete}'."
+            
+    def view_all_backups(self):
+        if not self.session.is_valid() or self.session.role not in ["super_admin"]:
+            log_to_db({"username": self.session.user, "activity": "Tried to view all backups", "additional_info": "Not a super admin", "suspicious": 1})
+            return "Fail, Session expired" if not self.session.is_valid() else "Fail, Must be super admin to perform this action."
+
+        if not os.path.exists(BACKUP_DIR):
+            return []
+
+        backups = [
+            filename for filename in os.listdir(BACKUP_DIR)
+            if filename.endswith(".zip") and os.path.isfile(os.path.join(BACKUP_DIR, filename))
+        ]
+
+        return sorted(backups)
