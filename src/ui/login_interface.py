@@ -4,7 +4,7 @@ from services.SystemAdminService import SystemAdminService
 from ui.super_admin_interface import super_admin_interface
 from ui.system_admin_interface import system_admin_interface
 from ui.service_engineer_interface import service_engineer_interface
-from models.Session import Session
+from models.Session import *
 from visual.text_colors import TextColors
 from ui.prompts.field_prompts import *
 from ui.menu_utils import *
@@ -38,30 +38,33 @@ def start_interface():
             continue
 
         password = password_raw.strip()
+        try:
+            if authenticate_user(username, password):
+                role = get_role(username)
+                log_to_db({"username": username, "activity": f"Succesful login as {username}", "additional_info": f"Succesfully logged in with role {role}.", "suspicious": 0})
+                session = Session(username, role)
+                check_temporary_password(username, session)
 
-        if authenticate_user(username, password):
-            role = get_role(username)
-            log_to_db({"username": username, "activity": f"Succesful login as {username}", "additional_info": f"Succesfully logged in with role {role}.", "suspicious": 0})
-            session = Session(username, role)
-            check_temporary_password(username, session)
-
-            print(f"\n[INFO] Welcome, {username}! Role: {role}")
-            
-            if role == "super_admin":
-                super_admin_interface(session)
-            elif role == "system_admin":
-                system_admin_interface(session)
-            elif role == "service_engineer":
-                service_engineer_interface(session)
+                print(f"\n[INFO] Welcome, {username}! Role: {role}")
+                
+                if role == "super_admin":
+                    super_admin_interface(session)
+                elif role == "system_admin":
+                    system_admin_interface(session)
+                elif role == "service_engineer":
+                    service_engineer_interface(session)
+                else:
+                    print(f"{t.red}[ERROR] Unknown role. Access denied.{t.end}")
             else:
-                print(f"{t.red}[ERROR] Unknown role. Access denied.{t.end}")
-        else:
-            print(f"{t.red}[ERROR] Invalid credentials.{t.end}")
+                print(f"{t.red}[ERROR] Invalid credentials.{t.end}")
 
-        again = input(f"\n{t.blue}Do you want to log in again? (Y/N): {t.end}").strip().lower()
-        if again != 'y' and again != 'yes' and again != 'ja':
-            print(f"{t.blue}[INFO] Exiting the system.{t.end}")
-            break
+            again = input(f"\n{t.blue}Do you want to log in again? (Y/N): {t.end}").strip().lower()
+            if again != 'y' and again != 'yes' and again != 'ja':
+                print(f"{t.blue}[INFO] Exiting the system.{t.end}")
+                break
+        except SessionExpired:
+            print("Session expired. Returning to start screen...\n")
+            continue
 
 
 def check_temporary_password(username, session):

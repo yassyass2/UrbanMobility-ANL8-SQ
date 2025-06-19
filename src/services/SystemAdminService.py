@@ -44,8 +44,6 @@ class SystemAdminService(ServiceEngineerService):
             rows = cursor.fetchall()
 
         cipher = Fernet(os.getenv("FERNET_KEY").encode())
-        # cipher = Fernet(os.environ["FERNET_KEY"].encode())
-        # later vervangen met dit /\ (veiliger)
 
         log_to_db({"username": self.session.user, "activity": "Fetched the overview of users", "additional_info": f"{self.session.user} is an admin.", "suspicious": 0})
 
