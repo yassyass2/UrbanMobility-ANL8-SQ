@@ -1,7 +1,12 @@
 import os
+import sys
 import keyboard
-import msvcrt
 from visual.text_colors import TextColors
+if sys.platform == "win32":
+    import msvcrt
+else:
+    import termios
+    import tty
 
 t = TextColors
 
