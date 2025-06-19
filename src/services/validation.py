@@ -61,7 +61,7 @@ def is_valid_birthday(value: str) -> bool:
         birth_date = datetime.datetime.strptime(value, "%Y-%m-%d").date()
         today = datetime.date.today()
         age = (today - birth_date).days / 365.25
-        return 0 < age <= 99
+        return 16 < age <= 99
     except ValueError:
         return False
 

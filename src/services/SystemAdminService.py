@@ -327,7 +327,7 @@ class SystemAdminService(ServiceEngineerService):
             while True:
                 birthday = input("Birthday (YYYY-MM-DD): ").strip()
                 if is_valid_birthday(birthday): break
-                print("Invalid birthday. Use YYYY-MM-DD and must be in the past.")
+                print("Invalid birthday. Use YYYY-MM-DD and must be between 16 and 99.")
 
             while True:
                 gender = input("Gender (male/female): ").strip().lower()
