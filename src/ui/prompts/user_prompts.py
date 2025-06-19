@@ -25,7 +25,7 @@ def prompt_new_user(role_options: list):
 
 
 def prompt_update_user(id, role_options):
-    fields = ["First Name", "Last Name", "Role", "Username", "Password"]
+    fields = ["First Name", "Last Name", "Role", "Username"]
     print(f"Update fields for user {id}: \n")
     for i, field in enumerate(fields, 1):
         print(f"{i}. {field}")
@@ -46,8 +46,6 @@ def prompt_update_user(id, role_options):
         updates["role"] = prompt_role(role_options, "Enter the new  role (service_engineer / system_admin): ")
     if "4" in numbers_csv:
         updates["username"] = prompt_username("Enter new username: ")
-    if "5" in numbers_csv:
-        updates["password_hash"] = prompt_password("Enter new password: ")
 
     return updates
 
