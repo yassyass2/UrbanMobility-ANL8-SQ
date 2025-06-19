@@ -7,6 +7,7 @@ from ui.prompts.scooter_prompts import prompt_new_scooter, prompt_update_scooter
 from ui.menu_utils import navigate_menu, flush_input, clear, click_to_return
 from ui.prompts.user_prompts import *
 from logger import *
+from services.validation import is_valid_number, is_valid_name
 
 
 def system_admin_interface(session: Session):
@@ -211,6 +212,13 @@ def traveller_operations_menu(system_admin_service):
                     clear()
                     flush_input()
                     traveller_id = input("Enter Traveller ID: ")
+
+                    if not is_valid_number(traveller_id):
+                        print("[ERROR] Invalid traveller ID. Must be a positive number.")
+                        flush_input()
+                        click_to_return()
+                        continue
+                    
                     system_admin_service.view_travellers_by_id(traveller_id)
                     click_to_return()
 
@@ -218,6 +226,13 @@ def traveller_operations_menu(system_admin_service):
                     clear()
                     flush_input()
                     traveller_name = input("Enter Traveller Last Name: ")
+
+                    if not is_valid_name(traveller_name):
+                        print("[ERROR] Invalid traveller last name. Must be a non-empty name.")
+                        flush_input()
+                        click_to_return()
+                        continue
+                    
                     system_admin_service.view_travellers_by_last_name(traveller_name)
                     click_to_return()
 
@@ -264,8 +279,8 @@ def scooter_operations_menu(system_admin_service):
                 print(f"No scooter found with ID: {scooter_id}")
                 flush_input()
                 click_to_return()
-                return
-  
+                continue
+
             fields_to_update = prompt_update_scooter(scooter_id, system_admin_service.session.role)
             system_admin_service.update_scooter(scooter_id, fields_to_update)
             click_to_return()
@@ -278,7 +293,7 @@ def scooter_operations_menu(system_admin_service):
             
         elif choice == "Search Scooter":
             while True:
-                menu_options_s = ["Search By ID", "Search By Name", "Back"]
+                menu_options_s = ["Search By ID", "Search By Brand", "Back"]
                 choice = navigate_menu(menu_options_s)
 
                 if choice == "Search By ID":

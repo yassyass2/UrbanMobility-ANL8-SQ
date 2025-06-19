@@ -243,6 +243,13 @@ def traveller_operations_menu(super_admin_service):
                     clear()
                     flush_input()
                     traveller_id = input("Enter Traveller ID: ")
+
+                    if not is_valid_number(traveller_id):
+                        print("[ERROR] Invalid traveller ID. Must be a positive number.")
+                        flush_input()
+                        click_to_return()
+                        continue
+                    
                     super_admin_service.view_travellers_by_id(traveller_id)
                     click_to_return()
 
@@ -250,6 +257,13 @@ def traveller_operations_menu(super_admin_service):
                     clear()
                     flush_input()
                     traveller_name = input("Enter Traveller Last Name: ")
+
+                    if not is_valid_name(traveller_name):
+                        print("[ERROR] Invalid traveller last name. Must be a non-empty name.")
+                        flush_input()
+                        click_to_return()
+                        continue
+                    
                     super_admin_service.view_travellers_by_last_name(traveller_name)
                     click_to_return()
 
