@@ -382,6 +382,10 @@ class SystemAdminService(ServiceEngineerService):
             registration_date = date.today().strftime('%Y-%m-%d')
 
             encrypted_fields = {
+                "first_name": cipher.encrypt(first_name.encode()).decode('utf-8'),
+                "last_name": cipher.encrypt(last_name.encode()).decode('utf-8'),
+                "birthday": cipher.encrypt(birthday.encode()).decode('utf-8'),
+                "gender": cipher.encrypt(gender.encode()).decode('utf-8'),
                 "street": cipher.encrypt(street.encode()).decode('utf-8'),
                 "zip_code": cipher.encrypt(zip_code.encode()).decode('utf-8'),
                 "city": cipher.encrypt(city.encode()).decode('utf-8'),
@@ -390,19 +394,20 @@ class SystemAdminService(ServiceEngineerService):
                 "license_number": cipher.encrypt(license_number.encode()).decode('utf-8'),
             }
 
+
             with sqlite3.connect(DB_FILE) as conn:
                 cursor = conn.cursor()
                 cursor.execute("""
-                    INSERT INTO travellers (
-                        first_name, last_name, birthday, gender,
-                        street, house_number, zip_code, city,
-                        email, mobile, license_number, registration_date
-                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO travellers (
+                    first_name, last_name, birthday, gender,
+                    street, house_number, zip_code, city,
+                    email, mobile, license_number, registration_date
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """, (
-                    first_name,
-                    last_name,
-                    birthday,
-                    gender,
+                    encrypted_fields["first_name"],
+                    encrypted_fields["last_name"],
+                    encrypted_fields["birthday"],
+                    encrypted_fields["gender"],
                     encrypted_fields["street"],
                     house_number,
                     encrypted_fields["zip_code"],
@@ -412,6 +417,7 @@ class SystemAdminService(ServiceEngineerService):
                     encrypted_fields["license_number"],
                     registration_date
                 ))
+
 
                 conn.commit()
                 log_to_db({"username": self.session.user, "activity": "Added a traveller", "additional_info": "Success", "suspicious": 0})
@@ -486,7 +492,12 @@ class SystemAdminService(ServiceEngineerService):
             "license_number": is_valid_license,
         }
 
-        sensitive_fields = {"street", "zip_code", "city", "email", "mobile", "license_number"}
+        # Alle velden behalve house_number zijn gevoelig en moeten versleuteld worden
+        encrypted_fields = {
+            "first_name", "last_name", "birthday", "gender", "street", "zip_code",
+            "city", "email", "mobile", "license_number"
+        }
+
         updated_data = {}
         cipher = Fernet(os.getenv("FERNET_KEY").encode())
 
@@ -499,10 +510,8 @@ class SystemAdminService(ServiceEngineerService):
             if validator and validator(new_value):
                 if field == "house_number":
                     updated_data[field] = int(new_value)
-                elif field in sensitive_fields:
+                elif field in encrypted_fields:
                     updated_data[field] = cipher.encrypt(new_value.encode()).decode('utf-8')
-                else:
-                    updated_data[field] = new_value
             else:
                 print(f"Invalid input for {field.replace('_', ' ')}. Skipping.")
 
@@ -554,6 +563,8 @@ class SystemAdminService(ServiceEngineerService):
             return
 
         try:
+            cipher = Fernet(os.getenv("FERNET_KEY").encode())
+
             with sqlite3.connect(DB_FILE) as conn:
                 cursor = conn.cursor()
                 cursor.execute("SELECT first_name, last_name FROM travellers WHERE id = ?", (int(traveller_id),))
@@ -563,7 +574,10 @@ class SystemAdminService(ServiceEngineerService):
                     print("Traveller not found.")
                     return
 
-                full_name = f"{row[0]} {row[1]}"
+                decrypted_first_name = cipher.decrypt(row[0].encode()).decode()
+                decrypted_last_name = cipher.decrypt(row[1].encode()).decode()
+                full_name = f"{decrypted_first_name} {decrypted_last_name}"
+
                 cursor.execute("DELETE FROM travellers WHERE id = ?", (int(traveller_id),))
                 conn.commit()
 
@@ -591,7 +605,14 @@ class SystemAdminService(ServiceEngineerService):
                 ]
 
                 decrypted = dict(zip(fields, row))
-                for key in ["street", "zip_code", "city", "email", "mobile", "license_number"]:
+
+                # Alle velden behalve id, house_number en registration_date moeten worden ontsleuteld
+                encrypted_keys = {
+                    "first_name", "last_name", "birthday", "gender",
+                    "street", "zip_code", "city", "email", "mobile", "license_number"
+                }
+
+                for key in encrypted_keys:
                     if decrypted[key]:
                         decrypted[key] = cipher.decrypt(decrypted[key].encode()).decode()
 
@@ -613,7 +634,7 @@ class SystemAdminService(ServiceEngineerService):
         log_to_db({"username": self.session.user, "activity": "Fetched travellers by id", "additional_info": "Success", "suspicious": 0})
 
         try:
-            cursor.execute("SELECT * FROM travellers WHERE id LIKE ?", (f"%{traveller_id}%",))   
+            cursor.execute("SELECT * FROM travellers WHERE id LIKE ?", (f"%{traveller_id}%",))
             travellers = cursor.fetchall()
             if travellers:
                 print("Travellers found:")
@@ -622,16 +643,19 @@ class SystemAdminService(ServiceEngineerService):
                     "street", "house_number", "zip_code", "city", "email",
                     "mobile", "license_number", "registration_date"
                 ]
+                encrypted_keys = {
+                    "first_name", "last_name", "birthday", "gender",
+                    "street", "zip_code", "city", "email", "mobile", "license_number"
+                }
+
                 for row in travellers:
                     traveller = dict(zip(fields, row))
 
-                    # Decrypt sensitive fields
-                    for key in ["street", "zip_code", "city", "email", "mobile", "license_number"]:
+                    for key in encrypted_keys:
                         try:
                             if traveller[key]:
                                 traveller[key] = cipher.decrypt(traveller[key].encode()).decode()
-                        except Exception as e:
-                            print(f"[DECRYPTION ERROR] Field '{key}' in traveller ID {traveller['id']} is not valid encrypted data.")
+                        except Exception:
                             traveller[key] = "[DECRYPTION FAILED]"
 
                     for key, value in traveller.items():
@@ -643,7 +667,6 @@ class SystemAdminService(ServiceEngineerService):
             print(f"Database error: {e}")
         finally:
             conn.close()
-
 
     def view_travellers_by_last_name(self, traveller_last_name):
         if not self.session.is_valid():
@@ -658,22 +681,29 @@ class SystemAdminService(ServiceEngineerService):
         log_to_db({"username": self.session.user, "activity": "Fetched travellers by lastname", "additional_info": "Success", "suspicious": 0})
 
         try:
-            cursor.execute("SELECT * FROM travellers WHERE last_name LIKE ?", (f"%{traveller_last_name}%",))   
+            cursor.execute("SELECT * FROM travellers WHERE last_name LIKE ?", (f"%{traveller_last_name}%",))
             travellers = cursor.fetchall()
             if travellers:
                 print("Travellers found:")
+                fields = [
+                    "id", "first_name", "last_name", "birthday", "gender",
+                    "street", "house_number", "zip_code", "city", "email",
+                    "mobile", "license_number", "registration_date"
+                ]
+                encrypted_keys = {
+                    "first_name", "last_name", "birthday", "gender",
+                    "street", "zip_code", "city", "email", "mobile", "license_number"
+                }
+
                 for row in travellers:
-                    fields = [
-                        "id", "first_name", "last_name", "birthday", "gender",
-                        "street", "house_number", "zip_code", "city", "email",
-                        "mobile", "license_number", "registration_date"
-                    ]
                     traveller = dict(zip(fields, row))
 
-                    # Decrypt sensitive fields
-                    for key in ["street", "zip_code", "city", "email", "mobile", "license_number"]:
-                        if traveller[key]:
-                            traveller[key] = cipher.decrypt(traveller[key].encode()).decode()
+                    for key in encrypted_keys:
+                        try:
+                            if traveller[key]:
+                                traveller[key] = cipher.decrypt(traveller[key].encode()).decode()
+                        except Exception:
+                            traveller[key] = "[DECRYPTION FAILED]"
 
                     for key, value in traveller.items():
                         print(f"{key.replace('_', ' ').title()}: {value}")
@@ -684,7 +714,6 @@ class SystemAdminService(ServiceEngineerService):
             print(f"Database error: {e}")
         finally:
             conn.close()
-
 
     def add_scooter(self, scooter_data: dict) -> bool:
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
@@ -797,7 +826,6 @@ class SystemAdminService(ServiceEngineerService):
         return True
 
     def traveller_overview(self) -> list[dict]:
-        # geen logging, wordt alleen aangeroepen bij update
         if not self.session.is_valid() or self.session.role not in ["super_admin", "system_admin"]:
             return []
 
@@ -811,8 +839,13 @@ class SystemAdminService(ServiceEngineerService):
 
             for row in rows:
                 traveller_id = row[0]
-                first_name = row[1]
-                last_name = row[2]
+                try:
+                    first_name = cipher.decrypt(row[1].encode()).decode()
+                    last_name = cipher.decrypt(row[2].encode()).decode()
+                except Exception:
+                    first_name = "[DECRYPTION FAILED]"
+                    last_name = "[DECRYPTION FAILED]"
+
                 reg_date = row[3]
                 overview.append({
                     "id": traveller_id,
