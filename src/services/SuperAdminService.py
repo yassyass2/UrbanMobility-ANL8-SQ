@@ -71,7 +71,7 @@ class SuperAdminService(SystemAdminService):
                 used,
                 created_at
             ) VALUES (?, ?, ?, ?, ?)
-            ''', (code, backup_file, admin_id,
+            ''', (cipher.encrypt(code.encode('utf-8')).decode('utf-8'), cipher.encrypt(backup_file.encode('utf-8')).decode('utf-8'), admin_id,
                   0, datetime.now().strftime('%Y-%m-%d')))
             
             conn.commit()
