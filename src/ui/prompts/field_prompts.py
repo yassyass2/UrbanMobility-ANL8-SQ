@@ -9,7 +9,7 @@ def input_password(prompt="Password: "):
     print(prompt, end='', flush=True)
     password = ''
     while True:
-        ch = msvcrt.getch()
+        ch = getch()
         if ch in {b'\r', b'\n'}:
             print('')
             break
@@ -20,7 +20,7 @@ def input_password(prompt="Password: "):
         elif ch == b'\x03': # Ctrl+C
             raise KeyboardInterrupt
         elif ch in {b'\x00', b'\xe0'}: # Special keys (like arrows)
-            msvcrt.getch()
+            getch()
         elif ch in {b'\x1b'}: # Escape key
             print(f'\n{t.red}[INFO] Exiting password input.{t.end}')
             return None
